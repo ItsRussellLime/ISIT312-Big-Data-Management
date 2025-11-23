@@ -1,0 +1,388 @@
+
+================================================================================
+PAGE 1 of 24
+================================================================================
+
+         ISIT312 Big Data Management
+Hive Data Structures
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 24
+================================================================================
+
+Hive Data Structures
+Outline
+Primitive Data Types
+Complex Data Types
+Databases
+Tables
+Partitions
+Buckets
+Views
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/24
+================================================================================
+PAGE 3 of 24
+================================================================================
+
+Primitive Data Types
+TINYINT, 1 byte, example: 10Y
+SMALLINT, 2 bytes, example: 10S
+INT, 4 bytes, example: 10
+BIGINT, 8 bytes, example: 10L
+FLOAT, 4 bytes, example: 0.1234567
+DOUBLE, 8 bytes, example: 0.1234567891234
+DECIMAL, (m,n), example: 3.14
+BINARY, n bytes, example: 1011001
+BOOLEAN, 1 byte example: TRUE
+STRING, 2G bytes, example: 'Abcdef'
+CHAR, 255 bytes, example: 'Hello'
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/24
+================================================================================
+PAGE 4 of 24
+================================================================================
+
+Primitive Data Types
+VARCHAR, 1 byte, example: 'Hive'
+DATE, YYYY-MM-DD, example: '2017-05-03'
+TIMESTAMP, YYYY-MM-DD HH:MM:SS[.!f...] example: '2017-05-03
+15:10:00.345'
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/24
+================================================================================
+PAGE 5 of 24
+================================================================================
+
+Hive Data Structures
+Outline
+Primitive Data Types
+Complex Data Types
+Databases
+Tables
+Partitions
+Buckets
+Views
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/24
+================================================================================
+PAGE 6 of 24
+================================================================================
+
+Complex Data Types
+ARRAY: list of values of the same types,
+MAP: a set of key-value pairs,
+STRUCT: user deﬁned structure of any type of ﬁelds,
+example: ['Hadoop',  'Pig','Hive']
+access: bigdata[ 1]
+Array type
+example: {'k1':'Hadoop',  'k2':'Pig'}
+access: bigdata[ 'k2']
+Map type
+example: {name:'Hadoop',  age:24, salary:50000.06}
+access: bigdata. name
+Struct type
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/24
+================================================================================
+PAGE 7 of 24
+================================================================================
+
+Complex Data Types
+The following CREATE TABLE command creates a table types with
+complex data types columns
+INSERT INTO and SELECT statements can be used to load data into a
+table with complex data types columns
+CREATE TABLE types(
+   array_col array<string>,
+   map_col map< int,string>,
+   struct_col struct< a:string, b:int, c:double> );
+A table with columns of types
+INSERT INTO types
+   SELECT array( 'bolt', 'nut', 'screw'),
+          map( 1,'bolt', 2,'nut', 3,'screw'),
+          named_struct( 'a','bolt', 'b',5, 'c',0.5)
+   FROM DUAL;
+Inserting values into a table
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/24
+================================================================================
+PAGE 8 of 24
+================================================================================
+
+Hive Data Structures
+Outline
+Primitive Data Types
+Complex Data Types
+Databases
+Tables
+Partitions
+Buckets
+Views
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/24
+================================================================================
+PAGE 9 of 24
+================================================================================
+
+Databases
+Database is a collection of conceptually related tables, i.e. tables that
+implement a conceptual schema
+Database is implemented as a folder/directory in HDFS
+A default database  is located at /user/hive/warehouse
+A new database is created in a folder /user/hive/warehouse
+For example, a database tpchr is located at
+/user/hive/warehouse/tpchr.db
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/24
+================================================================================
+PAGE 10 of 24
+================================================================================
+
+Databases
+The following CREATE DATABASE command creates a database tpchr
+To ﬁnd more information about a database we can use DESCRIBE
+DATABASE command
+A command USE makes a database "current" (there is no need to preﬁx
+a table name with a database name)
+To delete a database we can use DROP DATABASE command
+CREATE DATABASE tpchr;
+Creating a database
+DESCRIBE DATABASE tpchr;
+Listing a database
+USE tpchr;
+Making a database current
+DROP DATABASE tpchr;
+Dropping a database
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/24
+================================================================================
+PAGE 11 of 24
+================================================================================
+
+Hive Data Structures
+Outline
+Primitive Data Types
+Complex Data Types
+Databases
+Tables
+Partitions
+Buckets
+Views
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/24
+================================================================================
+PAGE 12 of 24
+================================================================================
+
+Tables
+An internal table  (or managed table ) is a table created by Hive in HDFS
+If data is already stored in HDFS then an external Hive table can be
+created to provide a tabular view of the data
+Location in HDFS of data stored in an external table is speciﬁed in the
+LOCATION properties instead of the default warehouse directory
+Hive fully manages the life cycle (add/delete data, create/drop table) of
+internal tables  and data in the internal tables
+When an external table is deleted its metadata information is deleted
+from a metastore  and the data is kept in HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/24
+================================================================================
+PAGE 13 of 24
+================================================================================
+
+Tables
+CREATE TABLE statement creates an internal table
+LOAD DATA statement loads data into an internal table
+CREATE TABLE IF NOT EXISTS intregion(
+   R_REGIONKEY DECIMAL( 12),
+   R_NAME VARCHAR( 25),
+   R_COMMENT VARCHAR( 152) )
+      ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+      STORED AS TEXTFILE;
+Creating an internal table
+LOAD DATA LOCAL INPATH 'region.tbl' INTO TABLE intregion;
+Loading data into an internal table
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/24
+================================================================================
+PAGE 14 of 24
+================================================================================
+
+Tables
+CREATE EXTERNAL TABLE statement creates an external table
+LOAD DATA statement loads data into an external table
+CREATE EXTERNAL TABLE IF NOT EXISTS extregion(
+   R_REGIONKEY DECIMAL( 12),
+   R_NAME VARCHAR( 25),
+   R_COMMENT VARCHAR( 152) )
+      ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+      STORED AS TEXTFILE LOCATION '/user/tpchr/region';
+Creating an external table
+LOAD DATA LOCAL INPATH 'region.tbl' INTO TABLE extregion;
+Loading data into an external table
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/24
+================================================================================
+PAGE 15 of 24
+================================================================================
+
+Tables
+An external table can be created "over" an already existing ﬁle in HDFS
+hadoop fs - mkdir /user/tpchr/nation
+hadoop fs - put nation. tbl /user/tpchr/nation
+hadoop fs - ls /user/tpchr/nation
+-rw-r--r-- 3 janusz supergroup 401 2017-07-02 10:24 /user/tpchr/nation/nation.tbl
+Loading a file to HDFS
+     
+CREATE EXTERNAL TABLE IF NOT EXISTS extnation(
+   N_NATIONKEY DECIMAL( 12),
+   N_NAME      VARCHAR( 25),
+   N_COMMENT   VARCHAR( 152) )
+      ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE LOCATION '/user/tpchr/nation';
+Creating an external table over a file in HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/24
+================================================================================
+PAGE 16 of 24
+================================================================================
+
+Hive Data Structures
+Outline
+Primitive Data Types
+Complex Data Types
+Databases
+Tables
+Partitions
+Buckets
+Views
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/24
+================================================================================
+PAGE 17 of 24
+================================================================================
+
+Partitions
+To eliminate unnecessary scans of entire table when only a fragment is
+needed a table can be divided into partitions
+A partition  corresponds to predeﬁned columns and it is stored as
+subfolder in HDFS
+When a table is searched only required partitions  are accessed
+CREATE TABLE IF NOT EXISTS part(
+   P_PARTKEY DECIMAL( 12),
+   P_NAME VARCHAR( 55),
+   P_TYPE VARCHAR( 25),
+   P_SIZE DECIMAL( 12),
+   P_COMMENT VARCHAR( 23) )
+   PARTITIONED BY (P_BRAND VARCHAR(20))
+      ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+      STORED AS TEXTFILE;
+Creating a partitioned table
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/24
+================================================================================
+PAGE 18 of 24
+================================================================================
+
+Partitions
+A partition must be added before data is loaded
+A command that loads a ﬁle into a table can be used to load a partition
+A partition is stored in HDFS as a subfolder
+ALTER TABLE part ADD PARTITION (P_BRAND='GoldenBolts');
+Adding a partition
+show partitions part;
+OK
+p_brand=GoldenBolts
+Time taken:  0.072 seconds,  Fetched:  1 row(s)
+Listing partitions
+LOAD DATA LOCAL INPATH '/local/home/janusz/HIVE-EXAMPLES/TPCHR/part.txt'
+OVERWRITE INTO TABLE part PARTITION (P_BRAND='GoldenBolts');
+Loading data into a partition
+hadoop fs - ls /user/hive/warehouse/ part
+Found 1 items
+drwxrwxr- x - janusz supergroup 0  2017-07-01
+Finding a partition in HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/24
+================================================================================
+PAGE 19 of 24
+================================================================================
+
+Hive Data Structures
+Outline
+Primitive Data Types
+Complex Data Types
+Databases
+Tables
+Partitions
+Buckets
+Views
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/24
+================================================================================
+PAGE 20 of 24
+================================================================================
+
+Buckets
+Another way to speed up processing of a table is to divide it into buckets
+A bucket corresponds to segment of ﬁle in HDFS
+The values in a bucket column will be hashed by a user deﬁned number
+into buckets.
+CREATE TABLE customer(
+   C_CUSTKEY DECIMAL( 12),
+   C_NAME VARCHAR( 25),
+   C_PHONE CHAR( 15),
+   C_ACCTBAL DECIMAL( 12,2) )
+   CLUSTERED BY (C_CUSTKEY)  INTO 2 BUCKETS
+      ROW FORMAT DELIMITED FIELDS TERMINATED BY '|';
+Creating a table with buckets
+set map.reduce.tasks = 2;
+set hive. enforce.bucketing = true;
+Setting MapReduce and Hive parameters
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/24
+================================================================================
+PAGE 21 of 24
+================================================================================
+
+Buckets
+INSERT can be used to populate a bucket table
+INSERT INTO customer
+values(1,'Customer#000000001', '25-989-741-2988', 711.56);
+INSERT INTO customer
+values(2,'Customer#000000002', '23-768-687-3665', 121.65);
+INSERT INTO customer
+values(3,'Customer#000000003', '11-719-748-3364', 7498.12);
+INSERT INTO customer
+values(4,'Customer#000000004', '14-128-190-5944', 2866.83);
+INSERT INTO customer
+values(5,'Customer#000000005', '13-750-942-6364', 794.47)
+Inserting into a table with buckets
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/24
+================================================================================
+PAGE 22 of 24
+================================================================================
+
+Hive Data Structures
+Outline
+Primitive Data Types
+Complex Data Types
+Databases
+Tables
+Partitions
+Buckets
+Views
+TOP                    ISIT312 Big Data Management, SIM S4 2025 22/24
+================================================================================
+PAGE 23 of 24
+================================================================================
+
+Views
+Views are logical data structures that simplify queries
+Views do not store data or get materialized
+Once a views is created its deﬁnition is frozen and changes in the tables
+used in the view deﬁnition are not reﬂected in the view schema
+CREATE VIEW vcustomer AS
+   SELECT C_CUSTKEY,  C_NAME, C_PHONE
+   FROM CUSTOMER
+   WHERE C_CUSTKEY <  5;
+Creating a view
+TOP                    ISIT312 Big Data Management, SIM S4 2025 23/24
+================================================================================
+PAGE 24 of 24
+================================================================================
+
+References
+Gross C., GuptaA., Shaw S., Vermeulen A. F., Kjerrumgaar D., Practical
+Hive: A guide to Hadoop's Data Warehouse System, Apress 2016,
+Chapter 4 (Available through UOW library)
+Lee D., Instant Apache Hive essentials how-to: leverage your knowledge
+of SQL to easily write distributed data processing applications on
+Hadoop using Apache Hive, Packt Publishing Ltd. 2013 (Available
+through UOW library)
+Apache Hive
+TOP                    ISIT312 Big Data Management, SIM S4 2025 24/24

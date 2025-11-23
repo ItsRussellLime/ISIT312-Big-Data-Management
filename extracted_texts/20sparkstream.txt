@@ -1,0 +1,266 @@
+
+================================================================================
+PAGE 1 of 17
+================================================================================
+
+        ISIT312 Big Data Management
+Spark Stream Processing
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 17
+================================================================================
+
+Spark Structured Data and Stream Processing
+Outline
+Spark Stream Processing Modules
+Stream Processing
+Structured Stream Processing: Quick Start
+Programming Model
+TOP              ISIT312 Big Data Management, SIM S4 2025 2/17
+================================================================================
+PAGE 3 of 17
+================================================================================
+
+Spark Stream Processing Modules
+Stream processing is a key requirement in many big data applications
+As soon as an application computes something of value, for example, a
+report or a machine learning model, an organization may want to
+compute this result continuously in a production environment
+This capability is lacked in Hadoop MapReduce  framework due to
+slowness of hard-disk IO
+In-memory computation implemented in Spark  make stream processing
+possible
+Spark Streaming  based on its low-level API Resilient Distributed Dataset
+is available since Spark 1.2
+Spark Structured Streaming based on the Spark SQL  engine is available
+since Spark 2.1
+Luckily, our VM has installation of Spark 2.1.1
+TOP              ISIT312 Big Data Management, SIM S4 2025 3/17
+================================================================================
+PAGE 4 of 17
+================================================================================
+
+Spark Structured Data and Stream Processing
+Outline
+Spark Stream Processing Modules
+Stream Processing
+Structured Stream Processing: Quick Start
+Programming Model
+TOP              ISIT312 Big Data Management, SIM S4 2025 4/17
+================================================================================
+PAGE 5 of 17
+================================================================================
+
+Stream Processing
+Stream processing is the act of continuously incorporating the new data
+in the stream to compute a result
+Sample sources of streams
+Stream processing vs. batch processingBank transactions
+Clicks on a website
+Sensor readings from IoT devices
+Scientiﬁc observations and experiments
+Manufacturing processes, and the others-
+-
+-
+-
+-
+Batch processing runs to a ﬁxed set of data, but stream processing handles an
+unbounded set of data
+Batch processing has low timeliness requirement, but stream processing
+requires to work at near realtime-
+-
+TOP              ISIT312 Big Data Management, SIM S4 2025 5/17
+================================================================================
+PAGE 6 of 17
+================================================================================
+
+Stream Processing
+Use cases of stream processing
+Notiﬁcations and alerting
+Real-time reporting
+Incremental ETL
+Update data to serve in real time
+Real-time decision making
+Online machine learning-
+-
+-
+-
+-
+-
+TOP              ISIT312 Big Data Management, SIM S4 2025 6/17
+================================================================================
+PAGE 7 of 17
+================================================================================
+
+Stream Processing
+To see the challenges of stream processing, we consider the following
+example
+Suppose we received the following data from a sensor
+What actions should be performed when receiving single values, say, 5 ?
+How to react to a pattern, say, 2 -> 10 -> 5
+What if data arrives out-of-order, for example, 10 before 5
+Other issues: What if a machine in the system fails, losing some state?
+What if the load is imbalanced? How can an application signal
+downstream consumers when analysis for some event is done, and so
+on
+{value: 1,  time: "2017-04-07T00:00:00"}
+{value: 2,  time: "2017-04-07T01:00:00"}
+{value: 5,  time: "2017-04-07T02:00:00"}
+{value: 10, time: "2017-04-07T01:30:00"}
+{value: 7,  time: "2017-04-07T03:00:00"}
+Sample data
+TOP              ISIT312 Big Data Management, SIM S4 2025 7/17
+================================================================================
+PAGE 8 of 17
+================================================================================
+
+Stream Processing
+Main challenges of stream processing are the following
+Processing out-of-order data based on application timestamps (also called
+event time)
+Maintaining large amounts of states
+Supporting high-data throughput
+Processing each event exactly once despite machine failures
+Handling load imbalance and strugglers
+Responding to events at low latency
+Joining with external data in other storage systems
+Determining how to update output sinks as new events arrive
+Writing data transactionally to output systems
+Updating application business logic at runtime-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+TOP              ISIT312 Big Data Management, SIM S4 2025 8/17
+================================================================================
+PAGE 9 of 17
+================================================================================
+
+Spark Structured Data and Stream Processing
+Outline
+Spark Stream Processing Modules
+Stream Processing
+Structured Stream Processing: Quick Start
+Programming Model
+TOP              ISIT312 Big Data Management, SIM S4 2025 9/17
+================================================================================
+PAGE 10 of 17
+================================================================================
+
+Structured Stream Processing: Quick Start
+Structured Streaming Processing suppose to provide fast, scalable, fault-
+tolerant, end-to-end exactly-once stream processing without the user
+having to reason about streaming
+A streaming version of the word-count example
+val lines =  spark.readStream
+                 . format("socket")             // socket source
+                 . option("host", "localhost")  // listen to the localhost
+                 . option("port", 9999)        // and port 9999
+                 . load()
+Reading a stream
+import spark. implicits. _
+ Importing methods
+val words =  lines.as[String].flatMap( _.split(" "))
+ sql
+val wordCounts =  words.groupBy("value").count()
+ Grouping
+val query =  wordCounts. writeStream
+                      . outputMode( "complete")  // accumulate the counting result
+                      . format("console")       // use the console as the sink
+                      . start()
+Writing stream
+TOP              ISIT312 Big Data Management, SIM S4 2025 10/17
+================================================================================
+PAGE 11 of 17
+================================================================================
+
+Structured Stream Processing: Quick Start
+The input is simulated by Netcat (a small utility found in most Unix-like
+systems) as a data server
+In a di!erent Terminal, we start Spark-shell and input the Scala code
+from the previous slides
+If we input in the ﬁrst Terminal session
+nc -lk 9999
+Starting Netcat
+nc -lk 9999
+apache spark
+apache hadoop
+...
+Starting Netcat
+TOP              ISIT312 Big Data Management, SIM S4 2025 11/17
+================================================================================
+PAGE 12 of 17
+================================================================================
+
+Structured Stream Processing: Quick Start
+Then we should see the right hand-side output in Spark-shell
+TOP              ISIT312 Big Data Management, SIM S4 2025 12/17
+================================================================================
+PAGE 13 of 17
+================================================================================
+
+Spark Structured Data and Stream Processing
+Outline
+Spark Stream Processing Modules
+Stream Processing
+Structured Stream Processing: Quick Start
+Programming Model
+TOP              ISIT312 Big Data Management, SIM S4 2025 13/17
+================================================================================
+PAGE 14 of 17
+================================================================================
+
+Programming Model
+The key idea in Structured Streaming is to treat a live data stream as a
+table that is being continuously appended
+This leads to a new stream processing model that is very similar to a
+batch processing model
+Users can express the streaming computation as standard batch-like
+query as on a static table, and Spark  runs it as an incremental query on
+the unbounded Input Table
+A new data item arriving on the stream is like a new row being
+appended to Input Table
+TOP              ISIT312 Big Data Management, SIM S4 2025 14/17
+================================================================================
+PAGE 15 of 17
+================================================================================
+
+Programming Model
+A query on the input will generate Result Table
+Every trigger interval, let us say, every X seconds, the new rows get
+appended to Input Table
+It will eventually updates Result Table
+Whenever Result Table gets updated, we would want to write the
+changed result rows to an external sink
+TOP              ISIT312 Big Data Management, SIM S4 2025 15/17
+================================================================================
+PAGE 16 of 17
+================================================================================
+
+Programming Model
+A complete process
+TOP              ISIT312 Big Data Management, SIM S4 2025 16/17
+================================================================================
+PAGE 17 of 17
+================================================================================
+
+References
+A Gentle Introduction to Spark, Databricks, (Available in READINGS
+folder)
+RDD Programming Guide
+Spark SQL, DataFrames and Datasets Guide
+Karau H., Fast data processing with Spark Packt Publishing, 2013
+(Available from UOW Library)
+Srinivasa, K.G., Guide to High Performance Distributed Computing: Case
+Studies with Hadoop, Scalding and SparkSpringer, 2015 (Available from
+UOW Library)
+Chambers B., Zaharia M.,Spark: The Deﬁnitive Guide, O'Reilly 2017
+Perrin J-G., Spark in Action, 2nd ed., Manning Publications Co. 2020
+TOP              ISIT312 Big Data Management, SIM S4 2025 17/17

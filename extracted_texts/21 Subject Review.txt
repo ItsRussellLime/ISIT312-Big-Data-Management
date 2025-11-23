@@ -1,0 +1,53 @@
+
+================================================================================
+PAGE 1 of 4
+================================================================================
+
+1
+ISIT312 
+Big Data Management
+SIM S
+ 4
+ 
+2025
+================================================================================
+PAGE 2 of 4
+================================================================================
+
+2Final Exam
+Exam D&T:   TBC   
+   3 hours
+   face-to-face
+   closed–book 
+   
+   The venue and seat will be announced by 
+  SIM
+Question:   50 marks in total
+   6 short answer questions
+   no multiple choice questions
+   no Java programming questions
+   a cheat sheet with HDFS, HQL, Hbase , and 
+  Spark examples will be provided
+================================================================================
+PAGE 3 of 4
+================================================================================
+
+3Final Exam
+Contents:   
+1.Hadoop architecture (HDFS, YARN, MapReduce layers)
+2.MapReduce Model (read ->map ->shuffle ->sort ->reduce)
+3.Basic Hadoop HDFS commands
+4.Hive concept, structure
+5.Basic HQL commands
+6.Data warehouse concept and design
+7.Multidimensional data model
+8.Relational data model
+9.Hbase  model (basic commands)
+10.Spark concept, data model, and operations (basic 
+commands)
+   
+================================================================================
+PAGE 4 of 4
+================================================================================
+
+4Questions ?

@@ -1,0 +1,428 @@
+
+================================================================================
+PAGE 1 of 28
+================================================================================
+
+  ISIT312 Big Data Management
+HDFS Interfaces
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 28
+================================================================================
+
+HDFS Interfaces
+Outline
+Hadoop Cluster vs. Pseudo-Distributed Hadoop
+Shell Interface to HDFS
+Web Interface to HDFS
+Java Interface to HDFS
+Internals of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/28
+================================================================================
+PAGE 3 of 28
+================================================================================
+
+Hadoop Cluster vs. Pseudo-Distributed Hadoop
+A Hadoop  cluster is deployed in a cluster of computer nodes
+Hadoop  provides a pseudo-distributed mode on a single machine
+HDFS provides the following interfaces to read, write, interrogate, and
+manage the ﬁlesystemAs Hadoop  is developed in Java, all Hadoop  services sit on Java Virtual Machines
+running on the cluster nodes-
+All Java Virtual Machines for necessary Hadoop  services are running on a single
+machine
+In our case this machine is a Virtual Machine running under Ubuntu 14.04-
+-
+The ﬁle system shell (Command-Line Interface): hadoop fs  or hdfs dfs
+Hadoop  Filesystem Java API
+Hadoop  simple Web User Interface
+Other interfaces, such as RESTful proxy interfaces (e.g.,HttpFS)-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/28
+================================================================================
+PAGE 4 of 28
+================================================================================
+
+HDFS Interfaces
+Outline
+Hadoop Cluster vs. Pseudo-Distributed Hadoop
+Shell Interface to HDFS
+Web Interface to HDFS
+Java Interface to HDFS
+Internals of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/28
+================================================================================
+PAGE 5 of 28
+================================================================================
+
+Shell Interface to HDFS
+Commands are provided in the shell Bash
+Hadoop's home directory
+You will mostly use scripts in the bin and sbin folders, and use jar ﬁles
+in the share folder
+Hadoop Daemons
+Hadoop is running properly only if the above services are running
+$ which bash
+/bin/bash
+Bash shell
+$ cd $HADOOP_HOME
+$ ls
+bin include libexec logs README.txt share
+etc lib LICENSE.txt NOTICE.txt sbin
+Home of Hadoop
+$ jps
+28530 SecondaryNameNode
+11188 NodeManager
+28133 NameNode
+28311 DataNode
+10845 ResourceManager
+3542 Jps
+Hadoop daemons
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/28
+================================================================================
+PAGE 6 of 28
+================================================================================
+
+Shell Interface to HDFS
+Create a HDFS user account (already created in a virtual machine used by
+us)
+Create an folder input
+View the folders in Hadoop  home
+Upload a ﬁle to HDFS
+Read a ﬁle in HDFS
+$ bin/hadoop fs -mkdir -p /user/bigdata
+ Creating home of user account
+$ bin/hadoop fs -mkdir input
+ Creating a folder
+$ bin/hadoop fs -ls
+Found 1 item
+drwxr-xr-x - bigdata supergroup 0 2017-07-17 16:33 input
+Listing home of user account
+$ bin/hadoop fs -put README.txt input
+$ bin/hadoop fs -ls input
+-rw-r--r-- 1 bigdata supergroup 1494 2017-07-12 17:53 input/README.txt
+Uploading a file
+$ bin/hadoop fs -cat input/README.txt
+<contents of README.txt goes here>
+Listing a file
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/28
+================================================================================
+PAGE 7 of 28
+================================================================================
+
+Shell Interface to HDFS
+The path in HDFS is represented as a URI with the preﬁx hdfs://
+For example
+When interacting with HDFS interface in the default setting, one can
+omitt IP, port, and user, and simply mention the directory or ﬁle
+Thus, the full-spelling of hadoop fs -ls input is
+hadoop fs -ls hdfs://<hostname>:
+<port>/user/bigdata/inputhdfs://<hostname>:<port>/user/bigdata/input  refers to the
+input  directory in HDFS under the user of bigdata
+hdfs ://<hostname>:
+<port>/user/bigdata/input/README.txt  refers to the ﬁle
+README.txt  in the above input  directory in HDFS-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/28
+================================================================================
+PAGE 8 of 28
+================================================================================
+
+Shell Interface to HDFS
+Some of frequently used commands
+Command          Description
+-put             Upload a file ( or files)  from the local filesystem to HDFS
+-mkdir           Create a directory in HDFS
+-ls              List the files in a directory in HDFS
+-cat             Read the content of a file ( or files)  in HDFS
+-copyFromLocal   Copy a file from the local filesystem to HDFS ( similar to
+                 put)
+-copyToLocal     Copy a file ( or files)  from HDFS to the local filesystem
+-rm              Delete a file ( or files)  in HDFS
+-rm -r           Delete a directory in HDFS
+Commands of Hadoop shell interface
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/28
+================================================================================
+PAGE 9 of 28
+================================================================================
+
+HDFS Interfaces
+Outline
+Hadoop Cluster vs. Pseudo-Distributed Hadoop
+Shell Interface to HDFS
+Web Interface to HDFS
+Java Interface to HDFS
+Internals of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/28
+================================================================================
+PAGE 10 of 28
+================================================================================
+
+Web Interface of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/28
+================================================================================
+PAGE 11 of 28
+================================================================================
+
+Web Interface of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/28
+================================================================================
+PAGE 12 of 28
+================================================================================
+
+HDFS Interfaces
+Outline
+Hadoop Cluster vs. Pseudo-Distributed Hadoop
+Shell Interface to HDFS
+Web Interface to HDFS
+Java Interface to HDFS
+Internals of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/28
+================================================================================
+PAGE 13 of 28
+================================================================================
+
+Java Interface to HDFS
+A ﬁle in a Hadoop  ﬁlesystem is represented by a Hadoop Path  object
+To get an instance of FileSystem, use the following factory methods
+The following method gets a local ﬁlesystem instanceIts syntax is URI
+For example,
+hdfs://localhost:8020/user/bigdata/input/README.txt-
+-
+public static  FileSystem get(Configuration conf)   throws  IOException
+public static  FileSystem get(URI uri, Configuration conf)   throws IOException
+public static  FileSystem get(URI uri, Configuration conf,  String user)
+                                            throws IOException
+Factory methods
+public static  FileSystem getLocal( Configuration conf)   throws  IOException
+Get local file system method
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/28
+================================================================================
+PAGE 14 of 28
+================================================================================
+
+Java interface to HDFS
+A Configuration object is determined by the Hadoop  conﬁguration
+ﬁles or user-provided parameters
+Using the default conﬁguration, one can simply set
+With a FileSystem instance in hand, we invoke an open() method to
+get the input stream for a ﬁle
+A Path object can be created by using a designated URI
+Configuration conf =   new Configuration()
+Configuration object
+public FSDataInputStream open( Path f)  throws IOException
+public abstract  FSDataInputStream open( Path f, int bufferSize)   throws IOException
+Open method
+    
+Path f =  new  Path( uri)
+Path object
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/28
+================================================================================
+PAGE 15 of 28
+================================================================================
+
+Java interface to HDFS
+Putting together, we can create the following ﬁle reading application
+    public class FileSystemCat {
+       public static void main( String[] args)  throws Exception {
+           String uri =  args[0];
+           Configuration conf =  new Configuration();
+           FileSystem fs =  FileSystem. get(URI.create(uri), conf);
+           FSDataInputStream in = null;
+           Path path =  new Path(uri);
+           in = fs.open(path);
+           IOUtils. copyBytes( in, System.out, 4096, true);
+       }
+    }
+Class FileSystemCat
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/28
+================================================================================
+PAGE 16 of 28
+================================================================================
+
+Java interface to HDFS
+The compilation simply uses the javac command, but it needs to point
+the dependencies in the class path.
+Then, a jar ﬁle is created and run as follows
+The output is the same as processing a command hadoop fs -cat
+export HADOOP_CLASSPATH= $($HADOOP_HOME/ bin/hadoop classpath)
+javac -cp $HADOOP_CLASSPATH FileSystemCat. java
+Compilation
+jar cvf FileSystemCat. jar FileSystemCat*.class
+hadoop jar FileSystemCat. jar FileSystemcat input/ README.txt
+jar file and processing
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/28
+================================================================================
+PAGE 17 of 28
+================================================================================
+
+Java interface to HDFS
+Suppose an input stream is created to read a local ﬁle
+To write a ﬁle on HDFS, the simplest way is to take a Path object for the
+ﬁle to be created and return an output stream to write to
+And then just copy the input stream to the output stream
+Another, more ﬂexible, way is to read the input stream into a bu!er and
+then write to the output stream
+    
+public  FSDataOutputStream create( Path f)  throws  IOException
+Path object
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/28
+================================================================================
+PAGE 18 of 28
+================================================================================
+
+Java interface to HDFS
+A ﬁle writing application
+public class FileSystemPut {
+   public static void main( String[] args)  throws Exception {
+      String localStr =  args[0];
+      String hdfsStr =  args[1];
+      Configuration conf =  new Configuration();
+      FileSystem local = FileSystem. getLocal( conf);
+      FileSystem hdfs =  FileSystem. get(URI.create(hdfsStr), conf);
+      Path localFile =  new Path(localStr);
+      Path hdfsFile =  new Path(hdfsStr);
+      FSDataInputStream in = local.open(localFile);
+      FSDataOutputStream out = hdfs.create(hdfsFile);
+      IOUtils. copyBytes( in, out, 4096, true);
+    }
+  }
+File writing
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/28
+================================================================================
+PAGE 19 of 28
+================================================================================
+
+Java interface to HDFS
+Another ﬁle writing application
+public class FileSystemPutAlt {
+    public static void main( String[] args)  throws Exception {
+      String localStr =  args[0];
+      String hdfsStr =  args[1];
+      Configuration conf =  new Configuration();
+      FileSystem local = FileSystem. getLocal( conf);
+      FileSystem hdfs =  FileSystem. get(URI.create(hdfsStr), conf);
+      Path localFile =  new Path(localStr);
+      Path hdfsFile =  new Path(hdfsStr);
+      FSDataInputStream in = local.open(localFile);
+      FSDataOutputStream out = hdfs.create(hdfsFile);
+      byte[] buffer =  new byte[256];
+      int bytesRead =  0;
+      while(  (bytesRead = in.read(buffer)) > 0) {
+        out. write(buffer, 0, bytesRead);
+      }
+      in. close();
+      out. close();
+     }
+   }
+File writing
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/28
+================================================================================
+PAGE 20 of 28
+================================================================================
+
+Java interface to HDFS
+Other ﬁle system API methods
+The method mkdirs() creates a directory
+The method getFileStatus() gets the meta information for a single
+ﬁle or directory
+The method listStatus() lists contents of ﬁles in a directory
+The method exists() checks whether a ﬁle exists
+The method delete() removes a ﬁle
+The Java API enables the implementation of customised applications to
+interact with HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/28
+================================================================================
+PAGE 21 of 28
+================================================================================
+
+HDFS Interfaces
+Outline
+Hadoop Cluster vs. Pseudo-Distributed Hadoop
+Shell Interface to HDFS
+Web Interface to HDFS
+Java Interface to HDFS
+Internals of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/28
+================================================================================
+PAGE 22 of 28
+================================================================================
+
+Internals of HDFS
+What happens "inside" when we read data into HDFS ?
+TOP                    ISIT312 Big Data Management, SIM S4 2025 22/28
+================================================================================
+PAGE 23 of 28
+================================================================================
+
+Internals of HDFS
+Read data from HDFS
+Step 1: The client opens the ﬁle it wishes to read by calling open() on
+the FileSystem object, which for HDFS is an instance of
+DistributedFileSystem
+Step 2: DistributedFileSystem calls the namenode, using remote
+procedure calls (RPCs), to determine the locations of the ﬁrst few blocks
+in the ﬁle
+Step 3: The DistributedFileSystem returns an FSDataInputStream
+to the client and the client calls read() on the stream
+TOP                    ISIT312 Big Data Management, SIM S4 2025 23/28
+================================================================================
+PAGE 24 of 28
+================================================================================
+
+Internals of HDFS
+Step 4: FSDataInputStream connects to the ﬁrst datanode for the ﬁrst
+block in the ﬁle, and then data is streamed from the datanode back to
+the client, by calling read() repeatedly on the stream
+Step 5: When the end of the block is reached, FSDataInputStream will
+close the connection to the datanode, then ﬁnd the best (possibly the
+same) datanode for the next block
+Step 6: When the client has ﬁnished reading, it calls close() on the
+FSDataInputStream
+TOP                    ISIT312 Big Data Management, SIM S4 2025 24/28
+================================================================================
+PAGE 25 of 28
+================================================================================
+
+Internals of HDFS
+Write data into HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 25/28
+================================================================================
+PAGE 26 of 28
+================================================================================
+
+Internals of HDFS
+Step 1: The client creates the ﬁle by calling create() on
+DistributedFileSystem
+Step 2: DistributedFileSystem makes an RPC call to the namenode
+to create a new ﬁle in the ﬁle system namespace and returns an
+FSDataOutputStream for the client to start writing data to
+Step 3: The client writes data into the FSDataOutputStream
+Step 4: Data wrapped by the FSDataOutputStream is split into
+packages, which are ﬂushed into a queue; data packages are sent to the
+blocks in a datanode and forwarded to other (usually two) datanodes
+TOP                    ISIT312 Big Data Management, SIM S4 2025 26/28
+================================================================================
+PAGE 27 of 28
+================================================================================
+
+Internals of HDFS
+Step 5: If FSDataStream receives an ack signal from the datanode the
+data packages are removed from the queue
+Step 6: When the client has ﬁnished writing data, it calls close() on the
+stream
+Step 7: The client signals the namenode that the writing is completed
+TOP                    ISIT312 Big Data Management, SIM S4 2025 27/28
+================================================================================
+PAGE 28 of 28
+================================================================================
+
+References
+Vohra D., Practical Hadoop ecosystem: a deﬁnitive guide to Hadoop-
+related frameworks and tools, Apress, 2016 (Available through UOW
+library)
+Aven J., Hadoop in 24 Hours, SAMS Teach Yourself, SAMS 2017
+TOP                    ISIT312 Big Data Management, SIM S4 2025 28/28

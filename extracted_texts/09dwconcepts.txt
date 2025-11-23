@@ -1,0 +1,369 @@
+
+================================================================================
+PAGE 1 of 26
+================================================================================
+
+         ISIT312 Big Data Management
+Data Warehouse Concepts
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 26
+================================================================================
+
+Data Warehouse Concepts
+Outline
+OLAP versus OLTP
+The Multidimensional Model
+OLAP Operations
+Data Warehouse Architecture
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/26
+================================================================================
+PAGE 3 of 26
+================================================================================
+
+OLAP versus OLTP
+Traditional database systems designed and tuned to support the day-to-
+day operation:
+OLTP database characteristics:
+Data analysis requires a new paradigm: online analytical processing
+(OLAP)Ensure fast, concurrent access to data
+Transaction processing and concurrency control
+Focus on online update data consistency
+Known as operational databases or online transaction processing (OLTP )-
+-
+-
+-
+Detailed data
+Do not include historical data
+Highly normalized
+Poor performance on complex queries including joins an aggregation-
+-
+-
+-
+Typical OLTP  query: pending orders for a customer
+Typical OLAP query: total sales amount by a product and by a customer-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/26
+================================================================================
+PAGE 4 of 26
+================================================================================
+
+OLAP versus OLTP
+OLAP characteristics
+The need for a di !erent database model to support OLAP was clear: led
+to data warehouses
+Data warehouse : (usually) large repositories that consolidate data from
+di!erent sources (internal and external to the organization), are updated
+o"ine, follow the multidimensional data model , designed and optimized
+to e#ciently support OLAP queriesOLTP paradigm focused on transactions, OLAP focused on analytical queries
+Normalization not good for analytical queries, reconstructing data requires a
+high number of joins
+OLAP databases support a heavy query load
+OLTP indexing techniques not e #cient in OLAP: oriented to access few records;
+OLAP queries typically include aggregation-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/26
+================================================================================
+PAGE 5 of 26
+================================================================================
+
+Data Warehouse Concepts
+Outline
+OLAP versus OLTP
+The Multidimensional Model
+OLAP Operations
+Data Warehouse Architecture
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/26
+================================================================================
+PAGE 6 of 26
+================================================================================
+
+The Multidimensional Model
+A view of data in n-dimensional space: a data cube
+A data cube  is composed of dimensions  and facts
+Dimensions : Perspectives used to analyze the data
+Attributes  describe dimensionsExample: A three-dimensional cube for sales data with dimensions Product,
+Time, and Customer, and a measure Quantity
+-
+Product dimension may have attributes ProductNumber and UnitPrice (not
+shown in the ﬁgure)-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/26
+================================================================================
+PAGE 7 of 26
+================================================================================
+
+The Multidimensional Model
+The cells or facts of a data cube have associated numeric values called
+measures
+Each cell of the data cube  represents Quantity of units sold by
+category, quarter, and customer's city
+Data granularity: level of detail at which measures are represented for
+each dimension of the cube
+Example: sales ﬁgures aggregated to granularities Category, Quarter, and City -
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/26
+================================================================================
+PAGE 8 of 26
+================================================================================
+
+The Multidimensional Model
+Instances of a dimension are called members
+A data cube  contains several measures, e.g. Amount, indicating the total
+sales amount (not shown)
+A data cube  may be sparse (typical case) or dense
+Hierarchies: allow viewing data at several granularitiesExample: Seafood and Beverages are members  of the Product at the
+granularity Category-
+Example: not all customers may have ordered products of all categories during all
+quarters-
+Deﬁne a sequence of mappings relating lower-level, detailed concepts to higher-
+level ones
+The lower level is called the child and the higher level is called the parent
+The hierarchical structure of a dimension is called the dimension schema
+A dimension instance  comprises all members at all levels in a dimension-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/26
+================================================================================
+PAGE 9 of 26
+================================================================================
+
+The Multidimensional Model
+In the previous ﬁgure, granularity of each dimension indicated between
+parentheses: Category for the Product dimension, Quarter for Time,
+and City for Customer
+We may want sales ﬁgures at a ﬁner granularity ( Month), or at a coarser
+granularity (Country)
+Hierarchies of the Product, Time, and Customer dimensions
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/26
+================================================================================
+PAGE 10 of 26
+================================================================================
+
+The Multidimensional Model
+Members of a hierarchy Product - Category
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/26
+================================================================================
+PAGE 11 of 26
+================================================================================
+
+The Multidimensional Model: Measures
+Aggregation of measures changes the abstraction level at which data in a
+cube are visualized
+Measures can be:
+Additive : can be meaningfully summarized along all the dimensions, using
+addition; The most common type of measures
+Semiadditive : can be meaningfully summarized using addition along some
+dimensions; Example: inventory quantities, which cannot be added along the
+Time dimension
+Nonadditive measures  cannot be meaningfully summarized using addition across
+any dimension; Example: item price, cost per unit, and exchange rate-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/26
+================================================================================
+PAGE 12 of 26
+================================================================================
+
+The Multidimensional Model: Measures
+Another classiﬁcation of measures:
+Distributive : deﬁned by an aggregation function that can be computed in a
+distributed way; Functions count, sum, minimum, and maximum are distributive,
+distinct count is not; Example: S = {3, 3, 4, 5, 8, 4, 7, 3, 8}  partitioned in
+subsets {3, 3, 4}, {5, 8, 4}, {7, 3, 8} gives a result of 8, while the answer over the
+original set is 5
+Algebraic measures  are deﬁned by an aggregation function that can be expressed
+as a scalar function of distributive ones; example: average, computed by dividing
+the sum by the count-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/26
+================================================================================
+PAGE 13 of 26
+================================================================================
+
+Data Warehouse Concepts
+Outline
+OLAP versus OLTP
+The Multidimensional Model
+OLAP Operations
+Data Warehouse Architecture
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/26
+================================================================================
+PAGE 14 of 26
+================================================================================
+
+OLAP Operations
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/26
+================================================================================
+PAGE 15 of 26
+================================================================================
+
+OLAP Operations
+Starting cube: quarterly sales (in thousands) by product category and
+customer cities for 2012
+We ﬁrst compute the sales quantities by country: a roll-up operation
+to the Country level along the Customer dimension
+Sales of category Seafood in France signiﬁcantly higher in the ﬁrst
+quarter
+To explore alternative visualizations, we sort products by name
+To see the cube with the Time dimension on the x axis, we rotate the
+axes of the original cube, without changing granularities → pivoting
+(see next 2 slides)To ﬁnd out if this occurred during a particular month, we take cube back to
+City aggregation level, and drill-down along Time to the Month level-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/26
+================================================================================
+PAGE 16 of 26
+================================================================================
+
+OLAP Operations
+To visualize the data only for Paris → slice operation, results in a 2-
+dimensional sub-cube, basically a collection of time series (see next
+slide)
+To obtain a 3-dimensional sub-cube containing only sales for the ﬁrst
+two quarters and for the cities Lyon and Paris, we go back to the original
+cube and apply a dice operation
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/26
+================================================================================
+PAGE 17 of 26
+================================================================================
+
+OLAP Operations
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/26
+================================================================================
+PAGE 18 of 26
+================================================================================
+
+OLAP Operations
+The operations in the previous slides can be deﬁned using the following
+algebraic operators.
+Roll-up: aggregates measures along a dimension hierarchy (using an
+aggregate function) to obtain measures at a coarser granularity
+Extended roll-up: similar to rollup, but drops all dimensions not involved
+in the operation
+Recursive roll-up: aggregates over a recursive hierarchy (a level rolls-up
+to itself)
+ROLLUP(CubeName,  (Dimension → Level)*, AggFunction( Measure)*)
+ROLLUP(Sales, Customer → Country, SUM(Quantity))
+OLAP
+ROLLUP*(CubeName,  [(Dimension → Level)*], AggFunction( Measure)*)
+ROLLUP*(Sales,  Time → Quarter, SUM(Quantity))
+ROLLUP*(Sales,  Time → Quarter, COUNT(Product) AS ProdCount)
+OLAP
+RECROLLUP( CubeName,  Dimension → Level, AggFunction( Measure)*)
+ OLAP
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/26
+================================================================================
+PAGE 19 of 26
+================================================================================
+
+OLAP Operations
+Drill-down moves from a more general level to a more detailed level
+in a hierarchy
+Sort returns a cube where the members of a dimension have been
+sorted according to the value of Expression
+DRILLDOWN( CubeName,  (Dimension → Level)*)
+DRILLDOWN( Sales, Time → Month)
+OLAP
+NAME is a predeﬁned keyword in the algebra representing the name of a
+member
+SORT(CubeName,  Dimension,  Expression [ASC | DESC])
+ OLAP
+SORT(Sales, Product, NAME)
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/26
+================================================================================
+PAGE 20 of 26
+================================================================================
+
+OLAP Operations
+Pivot
+Slice:where the axes are speciﬁed as {X, Y, Z, X , Y, Z, ... }.
+PIVOT(CubeName,  (Dimension → Axis)*)
+ OLAP
+- 1 1 1
+PIVOT(Sales, Time → X, Customer → Y, Product → Z)
+ OLAP
+Dimension will be dropped by ﬁxing a single Value in the Level, other
+dimensions unchanged
+Slice supposes that the granularity of the cube is at the speciﬁed level of the
+dimension
+SLICE(CubeName,  Dimension,  Level = Value)
+ OLAP
+-
+SLICE(Sales, Customer,  City = 'Paris')
+ OLAP
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/26
+================================================================================
+PAGE 21 of 26
+================================================================================
+
+OLAP Operations
+Dice:
+where ? is a Boolean condition over dimension levels, attributes, and measures.
+DICE(CubeName,  ? )
+ OLAP
+-
+DICE(Sales, (Customer. City = 'Paris' OR Customer. City = 'Lyon') AND 
+            ( Time.Quarter = 'Q1' OR Time. Quarter = 'Q2') )
+OLAP
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/26
+================================================================================
+PAGE 22 of 26
+================================================================================
+
+Data Warehouse Concepts
+Outline
+OLAP versus OLTP
+The Multidimensional Model
+OLAP Operations
+Data Warehouse Architecture
+TOP                    ISIT312 Big Data Management, SIM S4 2025 22/26
+================================================================================
+PAGE 23 of 26
+================================================================================
+
+Typical Data Warehouse Architecture
+TOP                    ISIT312 Big Data Management, SIM S4 2025 23/26
+================================================================================
+PAGE 24 of 26
+================================================================================
+
+Data Warehouse Architecture
+General data warehouse architecture: several tiers
+Back-end tier composed of:
+Data warehouse tier  composed of:
+OLAP tier composed of:The extraction, transformation , and loading  (ETL) tools: Feed data into the data
+warehouse from operational databases and internal and external data sources
+The data staging area : An intermediate database where all the data integration
+and transformation processes are run prior to the loading of the data into the
+data warehouse-
+-
+An enterprise data warehouse  and/or several data marts
+A metadata repository  storing information about the data warehouse and its
+contents-
+-
+An OLAP server which provides a multidimensional view of the data, regardless
+the actual way in which data are stored-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 24/26
+================================================================================
+PAGE 25 of 26
+================================================================================
+
+Data Warehouse Architecture
+Front-end tier  is used for data analysis and visualization
+Contains client tools such as OLAP tools , reporting tools , statistical tools, and
+data-mining tools-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 25/26
+================================================================================
+PAGE 26 of 26
+================================================================================
+
+References
+A. VAISMAN, E. ZIMANYI, Data Warehouse Systems: Design and
+Implementation, Chapter 3 Data Warehouse Concepts, Springer Verlag,
+2014
+TOP                    ISIT312 Big Data Management, SIM S4 2025 26/26

@@ -1,0 +1,418 @@
+
+================================================================================
+PAGE 1 of 27
+================================================================================
+
+  ISIT312 Big Data Management
+Hadoop Architecture
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/27
+================================================================================
+PAGE 3 of 27
+================================================================================
+
+HDFS: Hadoop Distributed File System
+HDFS is designed for:
+But not for:Very large ﬁles
+Stream data access
+Commodity hardware-
+-
+-
+Low-latency data access
+Lots of small ﬁles
+Multiple writers, arbitrary ﬁle modiﬁcations-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/27
+================================================================================
+PAGE 4 of 27
+================================================================================
+
+HDFS: Hadoop Distributed File System
+HDFS contains the following key components:
+NameNode :
+SecondaryNameNode  and Standby NameNode
+DataNodeHDFS master node process
+manages the ﬁlesystem metadata
+does not store a ﬁle itself-
+-
+-
+SecondaryNameNode  expedites the ﬁlesystem metadata recovery
+Standby NameNode  (optional) provides high availability-
+-
+runs HDFS slave node process
+manages block storage and access for reading or writing of data, block
+replication-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/27
+================================================================================
+PAGE 5 of 27
+================================================================================
+
+HDFS: Hadoop Distributed File System
+Architecture of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/27
+================================================================================
+PAGE 6 of 27
+================================================================================
+
+HDFS: Hadoop Distributed File System
+HDFS is a virtual ﬁlesystem
+Each ﬁle in HDFS consists of blocksappears to a client as one ﬁle system, but the data is stored in multiple di!erent
+locations
+deployed on the top of the native ﬁlesystems (such as ext3 , ext4  and xfs  in
+Linux)-
+-
+The size of each block defaults to 128MB but is conﬁgurable
+The default number of replicates for blocks is 3, but it is also conﬁgurable-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/27
+================================================================================
+PAGE 7 of 27
+================================================================================
+
+HDFS: Hadoop Distributed File System
+Logical view of data storage
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/27
+================================================================================
+PAGE 8 of 27
+================================================================================
+
+HDFS: Hadoop Distributed File Systeme
+Physical implementation of data ﬁle storage
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/27
+================================================================================
+PAGE 9 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/27
+================================================================================
+PAGE 10 of 27
+================================================================================
+
+NameNode Metadata
+NameNode  stores the metadata of the ﬁles in HDFS
+NameNode  functions:
+Maintain the metadata pertaining to the ﬁle system (e.g., the ﬁle hierarchy and
+the block locations for each ﬁle)
+Manage user access to the data ﬁles
+Map the data blocks to the DataNodes in the cluster
+Perform ﬁle system operations (e.g., opening and closing the ﬁles and
+directories)
+Provide registration services and periodic heartbeats for DataNodes-
+-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/27
+================================================================================
+PAGE 11 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/27
+================================================================================
+PAGE 12 of 27
+================================================================================
+
+DataNode and Secondary node
+DataNode functions:
+Secondary NameNode  and Standby NameNode  functions:Provide the block storage by storing blocks on the local ﬁle system
+Fulﬁl the read/write requests
+Replicating data across the cluster
+Keeping in touch with the NameNode  by sending periodic block reports and
+heartbeats
+A heartbeat conﬁrms the DataNode is alive and healthy, and a block report
+shows the blocks being managed by the DataNode-
+-
+-
+-
+-
+Without a NameNode , there is no way to know to which ﬁles the blocks stored
+on the DataNodes correspond to
+In essence, all ﬁles in HDFS are lost
+Secondary NameNode  periodically backups the metadata in the (primary)
+NameNode , which is usually for recovery
+Standby NameNode  is a hot node that running together with the (primary)
+NameNode  in the cluster, facilitating high-availability-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/27
+================================================================================
+PAGE 13 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/27
+================================================================================
+PAGE 14 of 27
+================================================================================
+
+Yet Another Resource Negotiator (YARN)
+YARN: the core subsystem in Hadoop responsible for governing,
+allocating, and managing the ﬁnite distributed processing resources
+available on a Hadoop cluster
+YARN provides its core services via two types of long-running daemons:introduced in Hadoop 2 to improve the MapReduce implementation, but
+general enough to support other distributed computing paradigms-
+A ResourceManager  (one per cluster) to manage the use of resources across
+the cluster, and
+NodeManagers  running on all the nodes in the cluster to launch and monitor
+containers-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/27
+================================================================================
+PAGE 15 of 27
+================================================================================
+
+Yet Another Resource Negotiator (YARN)
+Architecture of YARN
+A client is the program that submits jobs to the cluster
+A job, also called an application, contains one or more tasks
+Each mapper  and reducer task runs within a containerMay also be the gateway machine that the client program runs on-
+A task in a MapReduce job can be either a mapper  and a reducer task -
+Containers  are logical constructs that represent a speciﬁc amount of memory
+and other resources, such as processing cores (CPU)
+For example, a container can represent 2GB memory and 2 processing cores
+Containers  may also refer to the running environment of an application-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/27
+================================================================================
+PAGE 16 of 27
+================================================================================
+
+Yet Another Resource Negotiator (YARN)
+Architecture of YARN
+ResourceManager : YARN's daemon running on a master node
+NodeManager: YARN's daemon running on a slave node.ResourceManager  is responsible for granting cluster computing resources to
+applications running on the cluster
+Resources are granted the items of containers-
+-
+NodeManager manages containers on a slave node
+ApplicationMaster: the ﬁrst container allocated by the ResourceManager  to run
+on a NodeManager for each application-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/27
+================================================================================
+PAGE 17 of 27
+================================================================================
+
+Yet Another Resource Negotiator (YARN)
+Architecture of YARN
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/27
+================================================================================
+PAGE 18 of 27
+================================================================================
+
+Yet Another Resource Negotiator (YARN)
+Architecture of YARN
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/27
+================================================================================
+PAGE 19 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/27
+================================================================================
+PAGE 20 of 27
+================================================================================
+
+ResourceManager
+There is one ResourceManager  per cluster, which consists of two key
+components: Scheduler and ApplicationManager
+Key functions of ResourceManager :
+The role of ResourceManager  is pure management and scheduler
+It does not perform any actual data processing, for example the Map
+and Reduce  functions in a MapReduce applicationCreates the ﬁrst container for an application to run ApplicationMaster for that
+application
+Tracks the heartbeats from NodeManagers  to manage DataNodes
+Runs Scheduler to determine resource allocation among the clusters
+Manages cluster level security
+Manages the resource requests from ApplicationMasters
+Monitors the status of ApplicationMasters and restarts that container upon its
+failure
+Deallocates the containers when the application completes or after they expire-
+-
+-
+-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/27
+================================================================================
+PAGE 21 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/27
+================================================================================
+PAGE 22 of 27
+================================================================================
+
+NodeManager
+Each DataNode runs a NodeManager daemon for performing YARN
+functions
+Main functions of a NodeManager daemon:
+Communicates with ResourceManager  through health heartbeats and
+container status notiﬁcations.
+Registers and starts the application processes
+Launches both ApplicationMaster and the rest of an application's resource
+containers (that is, the map and reduce tasks that run in the containers) on
+request from ApplicationMaster
+Oversees the lifecycle of the application containers
+Monitors, manages and provides information regarding the resource
+consumption (CPU/memory) by the containers
+Tracks the health of DataNode
+Provides auxiliary services to YARN applications, such as services used by the
+MapReduce framework for its shu"e and sort operations-
+-
+-
+-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 22/27
+================================================================================
+PAGE 23 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 23/27
+================================================================================
+PAGE 24 of 27
+================================================================================
+
+ApplicationMaster
+For each YARN application, there is a dedicated ApplicationMaster
+Functions of ApplicationMaster:
+ApplicationMaster is running within a container
+ApplicationMaster's existence is associated with the running application
+When an application is completed, its ApplicationMaster no longer exists
+Once created, ApplicationMaster is in charge of requesting resources
+with ResourceManager  to run the application
+The resource request are very speciﬁc, for example:Managing task scheduling and execution
+Allocating resources locally for the application's tasks-
+-
+the ﬁle blocks needed to process the job,
+the amount of the resource, in terms of the number of containers to create for
+the application,
+the size of the containers, etc.-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 24/27
+================================================================================
+PAGE 25 of 27
+================================================================================
+
+Hadoop Architecture
+Outline
+Hadoop Distributed File System (HDFS)
+NameNode metadata
+DataNode and Secondary node
+Yet Another Resource Negotiator (YARN)
+ResourceManger
+NodeManager
+ApplicationMaster
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 25/27
+================================================================================
+PAGE 26 of 27
+================================================================================
+
+Summary
+Terminologies
+Hadoop  is a leading platform for big data
+Hadoop consists of a storage layer ( HDFS), a coordination and
+management layer (YARN) and a processing layer (e.g., MapReduce )
+HDFS and YARN have key services (daemons)
+MapReduce  is a fundamental computing model (i.e., batch processing)
+for big data
+Next: Interaction with Hadoop  and "dive" into the MapReduce
+framework
+TOP                    ISIT312 Big Data Management, SIM S4 2025 26/27
+================================================================================
+PAGE 27 of 27
+================================================================================
+
+References
+White T., Hadoop The Deﬁnitive Guide: Storage and analysis at Internet
+scale, O'Reilly, 2015 (Available through UOW library)
+Vohra D., Practical Hadoop ecosystem: a deﬁnitive guide to Hadoop-
+related frameworks and tools, Apress, 2016 (Available through UOW
+library)
+Aven J., Hadoop in 24 Hours, SAMS Teach Yourself, SAMS 2017
+Alapati S. R., Expert Hadoop Adiministration: Managing, tuning, and
+securing Spark, YARN and HDFS, Addison-Wesley 2017
+TOP                    ISIT312 Big Data Management, SIM S4 2025 27/27

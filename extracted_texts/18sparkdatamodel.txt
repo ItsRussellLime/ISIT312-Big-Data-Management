@@ -1,0 +1,377 @@
+
+================================================================================
+PAGE 1 of 20
+================================================================================
+
+        ISIT312 Big Data Management
+Spark Data Model
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 20
+================================================================================
+
+Introduction to Spark
+Outline
+Resilient Distributed Data Sets (RDDs)
+DataFrames
+SQL Tables/View
+Datasets
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 2/20
+================================================================================
+PAGE 3 of 20
+================================================================================
+
+Resilient Distributed Data Sets (RDDs)
+Resilient Distributed Datasets  (RDDs) is the lowest level (and the oldest)
+data abstraction available to the users
+An RDD represents an immutable, partitioned collection of elements
+that can be operated on in parallel
+Every row in an RDD is a Java object
+RDD does not need to have any schema deﬁned in advance
+It makes RDD very ﬂexible for various applications but in the same
+moment makes the manipulations on data more complicated
+Users must implement their own functions to perform simple tasks like
+for example aggregation functions: average, count, maximum, etc
+RDDs provide more control on how data is distributed over a cluster and
+how it is operated
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 3/20
+================================================================================
+PAGE 4 of 20
+================================================================================
+
+Resilient Distributed Data Sets (RDDs)
+RDD is characterized by the following properties
+Speciﬁcation of custom partitions may provide signiﬁcant performance
+improvements when using key-value RDDs
+The properties of RDDs determine how Spark schedules and processes
+the applications
+Di!erent RDDs may use di!erent properties depending on the required
+outcomesA list of partitions
+A function for computing each split
+A list of dependencies on other RDDs
+Optionally, a Partitioner for key-value  RDDs
+Optionally, a list of preferred locations to compute each split-
+-
+-
+-
+-
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 4/20
+================================================================================
+PAGE 5 of 20
+================================================================================
+
+Resilient Distributed Data Sets (RDDs)
+RDD can be created from a list
+Listing RDD
+   
+val strings = "hello hello !". split(" ") 
+strings: Array[String] = Array(hello, hello, !)
+Creating a list of strings
+  
+val rdset =  spark.sparkContext. parallelize( strings);
+rdset: org.apache.spark.rdd.RDD[String] = ParallelCollectionRDD[ 1] at parallelize
+                                                                 at :26
+Creating RDD
+  
+rdset.collect()
+res1: Array[String] = Array(hello, hello, !)
+Listing RDD
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 5/20
+================================================================================
+PAGE 6 of 20
+================================================================================
+
+Resilient Distributed Data Sets (RDDs)
+Creating RDD from a ﬁle by reading line-by-line
+   
+val lines =  spark.sparkContext.textFile("sales.txt")
+lines: org.apache.spark.rdd.RDD[String] = sales.txt MapPartitionsRDD[1] at textFile at :24
+Creating RDD
+   
+lines.collect()
+res0: Array[String] = Array(bolt 45, bolt 5, drill 1, drill 1, screw 1, screw 2, screw 3)
+Listing RDD
+   
+val pairs = lines.map(s => (s, 1))
+pairs: org.apache.spark.rdd.RDD[(String, Int)] = MapPartitionsRDD[2] at map at :26)
+Creating key-value pairs
+   
+val counts = pairs.reduceByKey((a, b) => a + b)
+counts: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[3] at reduceByKey at :28)
+Counting
+   
+counts.collect()
+res1: Array[(String, Int)] = Array((bolt 5,1), (drill 1,2), (bolt 45,1), (screw 2,1), (screw 3,1),
+(screw 1,1))
+Listing RDD
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 6/20
+================================================================================
+PAGE 7 of 20
+================================================================================
+
+Introduction to Spark
+Outline
+Resilient Distributed Data Sets (RDDs)
+DataFrames
+SQL Tables/Views
+Datasets
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 7/20
+================================================================================
+PAGE 8 of 20
+================================================================================
+
+DataFrames
+A DataFrame  is a table of data with rows and columns
+A list of columns in DataFrame  together with the types of columns is
+called as a schema
+A DataFrame  can span over many systems in a cluster
+The concepts similar to DataFrame  has been used in Python and R
+A DataFrame  is the simplest data model available in Spark
+A DataFrame  consist of zero or more partitions
+To parallelize data processing all data are divided into chunks called as
+partitions
+A partition  is a collection of rows located on a single system in a cluster
+When operating DataFrame  Spark simultaneously processes all relevant
+partitions
+Shu" e operation  is performed to share data among the systems in a cluster-
+-
+-
+-
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 8/20
+================================================================================
+PAGE 9 of 20
+================================================================================
+
+DataFrames
+A DataFrame  can be created in the following way
+The contents of a DataFrame can be listed in the following way
+val dataFrame =  spark.read.json("/bigdata/people.json")
+Creating a DataFrame
+dataFrame. show()
+      
++----+-------+
+| age| name  |
++----+-------+
+|null|Michael|
+| 30 | Andy  |
+| 19 | Justin|
++----+-------+
+Listing results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 9/20
+================================================================================
+PAGE 10 of 20
+================================================================================
+
+DataFrames
+A schema of a DataFrame  can be listed in the following way
+dataFrame. printSchema()
+    
+root
+|-- age: long (nullable = true)
+|-- name:  string (nullable = true)
+Listing a schema
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 10/20
+================================================================================
+PAGE 11 of 20
+================================================================================
+
+Introduction to Spark
+Outline
+Resilient Distributed Data Sets (RDDs)
+DataFrames
+SQL Tables/Views
+Datasets
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 11/20
+================================================================================
+PAGE 12 of 20
+================================================================================
+
+SQL Tables/Views
+SQL can be used to operate on DataFrames
+It is possible to register any DataFrame  as a table or view (a temporary
+table) and apply SQL to it
+There is no performance overhead when registering a DataFrame  as SQL
+Table  and when processing it
+A DataFrame  dataFrame can be registered as SQL temporary view
+people in the following way
+dataFrame. createOrReplaceTempView( "people")
+val sqlDF =  spark.sql("SELECT * FROM people")
+sqlDF.show()
+DataFrame as SQL Table
++----+-------+
+| age| name  |
++----+-------+
+|null|Michael|
+|30  |Andy   |
+|19  |Justin |
++----+-------+
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 12/20
+================================================================================
+PAGE 13 of 20
+================================================================================
+
+SQL Tables/Views
+SQL Tables are logically equivalent to DataFrames
+A di!erence between SQL Tables and DataFrames  is such that
+DataFrames  are deﬁned within the scope of a programming language
+while SQL Tables are deﬁned within a database
+When created, SQL table belongs to a default database
+SQL table can be created in the following way
+SQL view can be created in the following way
+CREATE TABLE flights(
+ DEST_COUNTRY_NAME STRING,
+ ORIGIN_COUNTRY_NAME STRING,  count LONG)
+   USING JSON OPTIONS (  path '/mnt/defg/chapter-1-data/json/2015-summary.json')
+CREATE TABLE
+CREATE VIEW just_usa_view AS
+ SELECT *
+ FROM flights
+ WHERE dest_country_name =  'United States'
+CREATE VIEW
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 13/20
+================================================================================
+PAGE 14 of 20
+================================================================================
+
+SQL Tables/Views
+Global SQL view can be created in the following way
+Temporary SQL view can be created in the following way
+Global and Temporary SQL view can be created in the following way
+      
+CREATE GLOBAL VIEW just_usa_global AS
+ SELECT *
+ FROM flights
+ WHERE dest_country_name =  'United States'
+CREATE VIEW
+      
+CREATE TEMP VIEW just_usa_global AS
+ SELECT *       
+ FROM flights
+ WHERE dest_country_name =  'United States'
+CREATE VIEW
+      
+CREATE GLOBAL TEMP VIEW just_usa_global AS
+ SELECT *
+ FROM flights
+ WHERE dest_country_name =  'United States'
+CREATE VIEW
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 14/20
+================================================================================
+PAGE 15 of 20
+================================================================================
+
+SQL Tables/Views
+Spark SQL view includes three core complex types: sets , lists, and structs
+Structs allow to create nested data
+The functions collect_set and collect_list functions create
+sets and lists
+      
+CREATE VIEW nested_data AS
+ SELECT (DEST_COUNTRY_NAME,  ORIGIN_COUNTRY_NAME)  as country,  count
+ FROM flights
+CREATE VIEW
+      
+SELECT DEST_COUNTRY_NAME as new_name,
+       collect_list( count) as flight_counts,
+       collect_set( ORIGIN_COUNTRY_NAME)  as origin_set
+FROM flights
+GROUP BY DEST_COUNTRY_NAME
+CREATE VIEW
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 15/20
+================================================================================
+PAGE 16 of 20
+================================================================================
+
+SQL Tables/Views
+Managed versus unmanaged tables
+Creating unmanaged (external) table in SparkManaged table  is a table that stored data and metadata, it is equivalent to an
+internal  table in Hive
+Unmanaged table  is a table that stores only data, it is equivalent to an external
+table in Hive-
+-
+CREATE EXTERNAL TABLE hive_flights(
+ DEST_COUNTRY_NAME STRING,
+ ORIGIN_COUNTRY_NAME STRING,
+ count LONG)
+  ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+  LOCATION '/mnt/defg/flight-data-hive/'
+CREATE EXTERNAL TABLE
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 16/20
+================================================================================
+PAGE 17 of 20
+================================================================================
+
+Introduction to Spark
+Outline
+Resilient Distributed Data Sets (RDDs)
+DataFrames
+SQL Tables/Views
+Datasets
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 17/20
+================================================================================
+PAGE 18 of 20
+================================================================================
+
+Datasets
+A Dataset is a distributed collection of data
+A DataFrame , is a Dataset of type Row
+Datasets  consists of the objects included in the rows; one object per row
+Datasets  are a strictly JVM language feature that only work with Scala
+and Java
+A Dataset can be constructed from JVM and then manipulated using
+functional transformations
+In Scala a case class object deﬁnes a schema of an object
+Datasets  use a specialized Encoder to serialize the objects for processing
+or transmitting over the network
+Dataset supports all operations of DataFrame
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 18/20
+================================================================================
+PAGE 19 of 20
+================================================================================
+
+Datasets
+A Dataset can be deﬁned, created, and used in the following way
+      
+case class Person(name: String, age: Long)
+Creating Dataset Schema
+      
+val caseClassDS = Seq(Person("Andy", 32)).toDS()
+Creating Dataset
+      
+caseClassDS.show()
+Listing Dataset
+      
++----+---+
+|name|age|
++----+---+
+|Andy| 32|
++----+---+
+Results
+caseClassDS.select($"name").show()
+Using a Dataset
+      
++-----+
+| name|
++-----+
+|James|
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 19/20
+================================================================================
+PAGE 20 of 20
+================================================================================
+
+References
+A Gentle Introduction to Spark, Databricks, (Available in READINGS
+folder)
+RDD Programming Guide
+Spark SQL, DataFrames and Datasets Guide
+Karau H., Fast data processing with Spark Packt Publishing, 2013
+(Available from UOW Library)
+Srinivasa, K.G., Guide to High Performance Distributed Computing: Case
+Studies with Hadoop, Scalding and Spark Springer, 2015 (Available from
+UOW Library)
+Chambers B., Zaharia M.,Spark: The Deﬁnitive Guide, O'Reilly 2017
+TOP               ISIT312 Big Data Management,  SIM S4 2025 20/20

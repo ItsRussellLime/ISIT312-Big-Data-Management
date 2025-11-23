@@ -1,0 +1,358 @@
+
+================================================================================
+PAGE 1 of 23
+================================================================================
+
+         ISIT312 Big Data Management
+Physical Data Warehouse Design
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 23
+================================================================================
+
+Physical Data Warehouse Design
+Outline
+Techniques for Physical Data Warehouse Design
+Materialized View
+Indexes for Data Warehouses
+Evaluation of Star Queries
+Data Warehouse Partitioning
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/23
+================================================================================
+PAGE 3 of 23
+================================================================================
+
+Techniques for Physical Data Warehouse Design
+Materialized Views
+Indexing
+PartitioningA view physically stored in the DB
+Typical problems: view update, view selection-
+-
+Used in Data Warehouse together with materialized views
+Speciﬁc for Data Warehouse: bitmap and join indexes-
+-
+Divides the contents of a relational table into several ﬁles
+Horizontal and vertical partitioning-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/23
+================================================================================
+PAGE 4 of 23
+================================================================================
+
+Physical Data Warehouse Design
+Outline
+Techniques for Physical Data Warehouse Design
+Materialized View
+Indexes for Data Warehouses
+Evaluation of Star Queries
+Data Warehouse Partitioning
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/23
+================================================================================
+PAGE 5 of 23
+================================================================================
+
+Materialized Views
+Materialized view  is a relational table that contains the rows that would
+be returned by the view deﬁnition - usually SELECT statement of SQL
+If we consider relational views as stored queries  then materialized views
+can be considered as stored results
+Materialized views  are created and used to reduce an amount of time
+needed to compute SELECT statements, for example join materialized
+views eliminate the needs to join the relational table
+There are two ways how materialized view can be used:
+In brute force method SQL is written to explicitly access the view
+Transparent query rewrite  method is applied when a query optimizer
+detects that a query can be computed against a materialized view
+instead of the source relational tablesbrute force method
+transparent query rewrite-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/23
+================================================================================
+PAGE 6 of 23
+================================================================================
+
+Materialized Views
+View maintenance  means that when the base relational tables are
+updated then a materialized view must be updated too
+Incremental view maintenance  means that updated view is computed
+from the individual modiﬁcations to the relational tables and not from
+the entire relational tables
+Creating materialized view
+Direct access to materialized view
+      
+CREATE MATERIALIZED VIEW MV_ORDERS
+REFRESH ON COMMIT
+ENABLE QUERY REWRITE
+AS( SELECT O_ORDERKEY, O_CUSTKEY, O_TOTALPRICE, O_ORDERDATE 
+    FROM ORDERS
+    WHERE O_ORDERDATE > TO_DATE('31-DEC-1986','DD-MON-YYYY') );
+Creating materialized view
+      
+SELECT * 
+FROM MV_ORDERS 
+WHERE O_ORDERDATE = TO_DATE('01-JAN-1992','DD-MON-YYYY')
+Directaccess to materialized view
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/23
+================================================================================
+PAGE 7 of 23
+================================================================================
+
+Materialized Views
+Access to materialized view  through query rewriting
+      
+SELECT O_ORDERKEY,  O_CUSTKEY,  O_TOTALPRICE,  O_ORDERDATE 
+FROM ORDERS
+WHERE O_ORDERDATE >  TO_DATE( '31-DEC-1986', 'DD-MON-YYYY');
+Indirect access to materialized view through query rewriting
+The results from EXPLAIN PLAN  statement -
+PLAN_TABLE_OUTPUT 
+----------------------------------------------------------------------------------
+| 0  | SELECT STATEMENT            |            |  108K| 2539K| 507 (1)| 00:00:01 | 
+|* 1 | MAT_VIEW REWRITE ACCESS FULL|  MV_ORDERS |  108K| 2539K| 507 (1)| 00:00:01 | 
+----------------------------------------------------------------------------------  
+Predicate Information ( identified by operation id):
+1 - filter("MV_ORDERS". "O_ORDERDATE"> TO_DATE(' 1986-12-31 00:00:00',  
+           'syyyy-mm-dd hh24:mi:ss'))
+Query processing plan
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/23
+================================================================================
+PAGE 8 of 23
+================================================================================
+
+Physical Data Warehouse Design
+Outline
+Techniques for Physical Data Warehouse Design
+Materialized View
+Indexes for Data Warehouses
+Evaluation of Star Queries
+Data Warehouse Partitioning
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/23
+================================================================================
+PAGE 9 of 23
+================================================================================
+
+Indexes for Data Warehouses
+An index provides a quick way to locate data of interest
+Sample query
+With the help of an index over a column EmployeeKey (primary key in
+EMPLOYEE table), a single disk block access will su!ce to answer the
+query
+Without this index, we should perform a complete scan of table
+EMPLOYEE
+Drawback: Almost every update on an indexed attribute also requires an
+index update
+Too many indexes may degrade performance
+Most popular indexing techniques in relational databases include B*-
+trees and bitmap indexes
+      
+SELECT *
+FROM EMPLOYEE
+WHERE EmployeeKey = 007;
+SELECT statement with equality condition in WHERE clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/23
+================================================================================
+PAGE 10 of 23
+================================================================================
+
+B*-tree index implementation
+B*-tree  can be traversed either:
+vertically from root to leaf level  of a tree
+horizontally  either from left corner of leaf level  to right corner of leaf level  or the
+opposite
+vertically and later on horizontally  either towards left lower corner or right lower
+corner of leaf level-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/23
+================================================================================
+PAGE 11 of 23
+================================================================================
+
+Bitmap Indexes
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/23
+================================================================================
+PAGE 12 of 23
+================================================================================
+
+Bitmap Indexes: Example
+Products having between 45 and 55  pieces per unit, and  with a unit price
+between 100 and 200
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/23
+================================================================================
+PAGE 13 of 23
+================================================================================
+
+Indexes for Data Warehouses: Requirements
+Symmetric partial match queries
+Indexing at multiple levels of aggregation
+E!cient batch update
+Sparse dataAll dimensions of the cube should be symmetrically indexed, to be searched
+simultaneously-
+Summary tables must be indexed in the same way as base nonaggregated
+tables-
+The refreshing time of a data warehouse must be considered when designing
+the indexing schema-
+Typically, only 20% of the cells in a data cube are nonempty
+The indexing schema must deal e !ciently with sparse and nonsparse data-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/23
+================================================================================
+PAGE 14 of 23
+================================================================================
+
+Physical Data Warehouse Design
+Outline
+Techniques for Physical Data Warehouse Design
+Materialized View
+Indexes for Data Warehouses
+Evaluation of Star Queries
+Data Warehouse Partitioning
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/23
+================================================================================
+PAGE 15 of 23
+================================================================================
+
+Star Queries
+Queries over star schemas are called star queries
+Join the fact table with the dimension tables
+A typical star query: total sales of discontinued products, by customer
+name and product name
+Three basic steps to evaluate the query:
+      
+SELECT ProductName,  CustomerName,  SUM(SalesAmount)
+FROM Sales S,  Customer C,  Product P
+WHERE S.CustomerKey = C.CustomerKey AND S.ProductKey = P.ProductKey AND
+      P.Discontinued = 'Yes'
+GROUP BY C.CustomerName,  P.ProductName;
+Star query
+(1) Evaluation of the join conditions
+(2) Evaluation of the selection conditions over the dimensions
+(3) Aggregation of the tuples that passed the ﬁlter-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/23
+================================================================================
+PAGE 16 of 23
+================================================================================
+
+Evaluation of Star Queries with Bitmap Indexes:
+Example
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/23
+================================================================================
+PAGE 17 of 23
+================================================================================
+
+Evaluation of Star Queries using Bitmap Indexes
+Evaluation of star query requires
+Example of query evaluationa B+ tree over CustomerKey  and ProductKey
+Bitmap indexes on the foreign key columns in Sales  and on
+Discontinued in Product-
+-
+(1) Obtain the record numbers of the records that satisfy the condition
+Discontinued = 'Yes'
+Answer: Records with ProductKey  values p2 , p4  , and p6
+(2) To access the bitmap vectors in Sales  with these labels perform a join
+between Product  and Sales
+(3) Vectors labeled p2 and p4 match, no fact record for p6
+(4) Obtain the values for the CustomerKey  in these records ( c2 andc3 )
+(5) Use B+-tree index on ProductKey  and CustomerKey  to ﬁnd the
+names of products and customers
+(6) Answer: ( cust2,prod2,200 ) and (cust3,prod4,100 )-
+-
+-
+-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/23
+================================================================================
+PAGE 18 of 23
+================================================================================
+
+Physical Data Warehouse Design
+Outline
+Techniques for Physical Data Warehouse Design
+Materialized View
+Indexes for Data Warehouses
+Evaluation of Star Queries
+Data Warehouse Partitioning
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/23
+================================================================================
+PAGE 19 of 23
+================================================================================
+
+Data Warehouse Partitioning
+Partitioning (or fragmentation) divides a table into smaller data sets
+(each one called a partition)
+Applied to tables and indexes
+Vendors provide several d "erent partitioning methods
+Vertical partitioning splits the attributes of a table into groups that can
+be independently stored
+Horizontal partitioning  divides a table into smaller tables with same
+structure than the full tableE.g., most often used attributes are stored in one partition, less often used
+attributes in another one
+More records ﬁt into main memory, reducing their processing time-
+-
+For example, if some queries require the most recent data, partition
+horizontally according to time-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/23
+================================================================================
+PAGE 20 of 23
+================================================================================
+
+Queries over Partitioned Databases
+Partition pruning  is the typical way of improving query performance
+using partitioning
+Example: A Sales  fact table in a warehouse can be partitioned by
+month
+A query requesting orders for a single month only needs to access the
+partition of such a month
+Joins  also enhanced by using partitioning:
+When the two tables are partitioned on the join attributes
+When the reference table is partitioned on its primary key
+Large join is broken down into smaller joins-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/23
+================================================================================
+PAGE 21 of 23
+================================================================================
+
+Partitioning Strategies
+Three partitioning strategies: Range partitioning, hash partitioning, and
+list partitioning
+Range partitioning maps records to partitions based on ranges of values
+of the partitioning key
+Time dimension is a natural candidate for range partitioning
+Example: A table with a date  column deﬁned as the partitioning key
+Hash partitioning  uses a hashing algorithm over the partitioning key to
+map records to partitionsJanuary-2012  partition will contain rows with key values from January 1 to
+January 31, 2012-
+Hashing algorithm distributes rows among partitions in a uniform fashion,
+yielding, ideally, partitions of the same size
+Typically used when partitions are distributed in several devices, and when data
+are not partitioned based on time-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/23
+================================================================================
+PAGE 22 of 23
+================================================================================
+
+Partitioning Strategies
+List partitioning speciﬁes a list of values for the partitioning key
+Some vendors (e.g. Oracle) support the notion of composite partitioning,
+combining the basic data distribution methods
+Thus, a table can be range partitioned, and each partition can be
+subdivided using hash partitioning
+TOP                    ISIT312 Big Data Management, SIM S4 2025 22/23
+================================================================================
+PAGE 23 of 23
+================================================================================
+
+References
+A. VAISMAN, E. ZIMANYI, Data Warehouse Systems: Design and
+Implementation, Chapter 7 Physical Data Warehouse Design, Springer
+Verlag, 2014
+TOP                    ISIT312 Big Data Management, SIM S4 2025 23/23

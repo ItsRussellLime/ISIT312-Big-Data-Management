@@ -1,0 +1,203 @@
+
+================================================================================
+PAGE 1 of 18
+================================================================================
+
+         ISIT312 Big Data Management
+Conceptual Data Warehouse
+Design
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 18
+================================================================================
+
+Conceptual Data Warehouse Design
+Outline
+MultiDim: A Conceptual Model for Data Warehouses
+MultiDim Model: Notation
+Dimension Hierarchies
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/18
+================================================================================
+PAGE 3 of 18
+================================================================================
+
+MultiDim: A Conceptual Multidimensional Model
+Conceptual data models
+No well-established conceptual model for multidimensional data
+Several proposals based on UML, on the ER model, or using speciﬁc
+notations
+Problems:Allow better communication between designers and users to understand
+application requirements
+More stable than implementation-oriented (logical) schema, which changes with
+the platform
+Provide better support for visual user interfaces-
+-
+-
+Cannot express complex kinds of hierarchies
+Lack of a mapping to the implementation platform-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/18
+================================================================================
+PAGE 4 of 18
+================================================================================
+
+MultiDim: A Conceptual Multidimensional Model
+Currently, data warehouses are designed using mostly logical models
+(star and snowﬂake schemas)
+MultiDim data model is based on the entity-relationship model
+Includes concepts like:
+Supports various kinds of hierarchies existing in real-world applications
+Can be mapped to star or snowﬂake relational structuresDi!cult to express requirements (technical knowledge required
+Limit users to deﬁning only elements that the underlying implementation
+systems can manage-
+-
+dimensions
+hierarchies
+facts
+measures-
+-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/18
+================================================================================
+PAGE 5 of 18
+================================================================================
+
+Conceptual Datawarehouse Design
+Outline
+MultiDim: A Conceptual Model for Data Warehouses
+MultiDim Model: Notation
+Dimension Hierarchies
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/18
+================================================================================
+PAGE 6 of 18
+================================================================================
+
+MultiDim Model: Notation
+A graphical notation used for a sample hierarchy
+Dimension: level or one or more hierarchies
+Hierarchy: several related levels
+Level: entity type
+Member : every instance of a level
+Child and parent levels : the lower and higher levels
+Leaf and root levels : ﬁrst and last levels in a hierarchy
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/18
+================================================================================
+PAGE 7 of 18
+================================================================================
+
+MultiDim Model: Notation
+A graphical notation used for a sample hierarchy
+Cardinality : minimum/maximum numbers of members in a level related
+to members in another level
+Criterion : expresses di"erent hierarchical structures used for analysis
+Key attribute: indicates how child members are grouped
+Descriptive attributes: describe characteristics of members
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/18
+================================================================================
+PAGE 8 of 18
+================================================================================
+
+MultiDim Model: Notation
+A sample fact with 5 dimension s
+Fact: relates measures to leaf levels in dimensions
+Dimensions can be related to fact with one-to-one , one-to-many, of
+many-to-many
+Dimension can be related several times to a fact with di "erent roles
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/18
+================================================================================
+PAGE 9 of 18
+================================================================================
+
+MultiDim Model: Notation
+Summary
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/18
+================================================================================
+PAGE 10 of 18
+================================================================================
+
+MultiDim Conceptual Schema of the Northwind
+Data Warehouse
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/18
+================================================================================
+PAGE 11 of 18
+================================================================================
+
+Conceptual Data Warehouse Design
+Outline
+MultiDim: A Conceptual Model for Data Warehouses
+MultiDim Model: Notation
+Dimension Hierarchies
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/18
+================================================================================
+PAGE 12 of 18
+================================================================================
+
+Balanced Hierarchies
+At schema level: only one path where all parent-child relationships are
+many-to-one and mandatory
+At instance level: members form a balanced tree (all the branches have
+the same length)
+All parent members have at least one child member, and a child belongs
+exactly to one parent
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/18
+================================================================================
+PAGE 13 of 18
+================================================================================
+
+Unbalanced Hierarchies
+At schema level: one path where all parent-child relationships are many-
+to-one, but some are optional
+At instance level: members form a unbalanced tree
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/18
+================================================================================
+PAGE 14 of 18
+================================================================================
+
+Recursive Hierarchies
+A special case of unbalanced hierarchies
+The same level is linked by the two roles of a parent-child relationship
+Used when all hierarchy levels express the same semantics
+The characteristics of the parent and child are similar (or the same)
+Schema level
+Instance level
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/18
+================================================================================
+PAGE 15 of 18
+================================================================================
+
+Generalized Hierarchies
+At schema level: multiple exclusive paths sharing at least the leaf level;
+may also share other levels
+Two aggregation paths, one for each type of customer
+At instance level: each member belongs to only one path
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/18
+================================================================================
+PAGE 16 of 18
+================================================================================
+
+Noncovering Hierarchies
+Also known as ragged or level-skipping hierarchies
+A special case of generalized hierarchies
+At the schema level: Alternative paths are obtained by skipping one or
+several intermediate levels
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/18
+================================================================================
+PAGE 17 of 18
+================================================================================
+
+Noncovering Hierarchies
+At instance level: Path length from the leaves to the same parent can be
+di"erent for di "erent members
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/18
+================================================================================
+PAGE 18 of 18
+================================================================================
+
+References
+A. VAISMAN, E. ZIMANYI, Data Warehouse Systems: Design and
+Implementation, Chapter 4 Conceptual Data Warehouse Design,
+Springer Verlag, 2014
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/18

@@ -1,0 +1,254 @@
+
+================================================================================
+PAGE 1 of 18
+================================================================================
+
+         ISIT312 Big Data Management
+SQL for Data Warehousing
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 18
+================================================================================
+
+SQL for Data Warehousing
+Outline
+SQL/OLAP Operations
+Window partitioning
+Window ordering
+Window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 2/18
+================================================================================
+PAGE 3 of 18
+================================================================================
+
+SQL/OLAP Operations
+Consider the SALES fact table
+To compute all possible aggregations along the dimensions Product and
+Customer we must scan the whole relational table SALES several times
+It can be implemented in SQL using NULL and UNION in the following
+way:
+      
+SELECT ProductKey, CustomerKey, SalesAmount
+FROM Sales
+  UNION
+SELECT ProductKey, NULL, SUM(SalesAmount)
+FROM Sales
+GROUP BY ProductKey
+  UNION
+SELECT NULL, CustomerKey, SUM(SalesAmount)
+FROM Sales
+GROUP BY CustomerKey
+  UNION
+SELECT NULL, NULL, SUM(SalesAmount)
+FROM Sales;
+Finding aggregations along many dimensions
+TOP                    ISIT312 Big Data Management, SIM S2 2025 3/18
+================================================================================
+PAGE 4 of 18
+================================================================================
+
+SQL/OLAP Operations
+A data cube created through UNION of individual SELECT statements
+each one creating one combination of dimensions looks in the following
+way
+TOP                    ISIT312 Big Data Management, SIM S2 2025 4/18
+================================================================================
+PAGE 5 of 18
+================================================================================
+
+SQL/OLAP Operations
+Computing a cube with n dimensions requires (2*2*2*... *2)(n times)
+SELECT statements with GROUP BY clause
+SQL/OLAP extends the GROUP BY clause with the ROLLUP and CUBE
+operators
+ROLLUP computes group subtotals in the order given by a list of
+attributes
+CUBE computes all totals of such a list
+Shorthands for a more powerful operator, GROUPING SETS
+Equivalent queries
+      
+SELECT ProductKey, CustomerKey, SUM(SalesAmount)
+FROM Sales
+GROUP BY ROLLUP(ProductKey, CustomerKey);
+Sample application of ROLLUP operation
+      
+SELECT ProductKey, CustomerKey, SUM(SalesAmount)
+FROM Sales
+GROUP BY GROUPING SETS((ProductKey,CustomerKey),(ProductKey),());
+Sample application of GROUPING SET operation
+TOP                    ISIT312 Big Data Management, SIM S2 2025 5/18
+================================================================================
+PAGE 6 of 18
+================================================================================
+
+SQL/OLAP Operations
+Equivalent queries
+SELECT ProductKey,  CustomerKey,  SUM(SalesAmount)
+FROM Sales
+GROUP BY CUBE(ProductKey,  CustomerKey);
+Sample application of CUBE operation
+SELECT ProductKey,  CustomerKey,  SUM(SalesAmount)
+FROM Sales
+GROUP BY GROUPING SETS((ProductKey,  CustomerKey),(ProductKey),(CustomerKey),());
+Sample application of GROUPING SETS operation
+TOP                    ISIT312 Big Data Management, SIM S2 2025 6/18
+================================================================================
+PAGE 7 of 18
+================================================================================
+
+SQL/OLAP Operations
+TOP                    ISIT312 Big Data Management, SIM S2 2025 7/18
+================================================================================
+PAGE 8 of 18
+================================================================================
+
+SQL for Data Warehousing
+Outline
+SQL/OLAP Operations
+Window partitioning
+Window ordering
+Window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 8/18
+================================================================================
+PAGE 9 of 18
+================================================================================
+
+Window partitioning
+Allows to compare detailed data with aggregate values
+For example, ﬁnd a relevance of each customer with respect to the sales
+of the product
+First three columns are obtained from the Sales table
+The fourth column is created in the following way
+    
+SELECT ProductKey,  CustomerKey,  SalesAmount,
+       MAX( SalesAmount)  OVER (PARTITION BY ProductKey)  AS MaxAmount
+FROM SALES;
+Sample window partitioning
+Create a window called partition  that contains all tuples of the same
+product
+SalesAmount  is aggregated over this window using MAX function-
+-
+TOP                    ISIT312 Big Data Management, SIM S2 2025 9/18
+================================================================================
+PAGE 10 of 18
+================================================================================
+
+Window partitioning
+      
+SELECT ProductKey,  CustomerKey,  SalesAmount,
+       MAX( SalesAmount)  OVER (PARTITION BY ProductKey)  AS MaxAmount
+FROM SALES;
+Sample window partitioning
+TOP                    ISIT312 Big Data Management, SIM S2 2025 10/18
+================================================================================
+PAGE 11 of 18
+================================================================================
+
+SQL for Data Warehousing
+Outline
+SQL/OLAP Operations
+Window partitioning
+Window ordering
+Window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 11/18
+================================================================================
+PAGE 12 of 18
+================================================================================
+
+Window ordering
+ORDER BY clause allows the rows within a partition to be ordered
+It is useful to compute rankings, with a function RANK()
+For example, how does each product rank in the sales of each customer
+      
+SELECT ProductKey,  CustomerKey,  SalesAmount,
+       RANK() OVER (PARTITION BY CustomerKey ORDER BY SalesAmount DESC) AS RowNo
+FROM Sales;
+Sample window ordering
+TOP                    ISIT312 Big Data Management, SIM S2 2025 12/18
+================================================================================
+PAGE 13 of 18
+================================================================================
+
+SQL for Data Warehousing
+Outline
+SQL/OLAP Operations
+Window partitioning
+Window ordering
+Window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 13/18
+================================================================================
+PAGE 14 of 18
+================================================================================
+
+Window framing
+It is possible to deﬁne a size of a partition
+It can be used to compute statistical functions over time series, like
+moving average
+For example, three-month moving average of sales by product
+Processing of a query opens a window with the rows pertaining to the
+current product
+Then, it orders the window by year and month and computes the
+average over the current row and the previous two ones if they exist
+      
+SELECT ProductKey,  Year, Month, SalesAmount,
+       AVG( SalesAmount)  OVER (PARTITION BY ProductKey
+                              ORDER BY Year, Month
+                              ROWS 2 PRECEDING)  AS MovAvg
+FROM SALES;
+Sample window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 14/18
+================================================================================
+PAGE 15 of 18
+================================================================================
+
+Window framing
+      
+SELECT ProductKey,  Year, Month, SalesAmount,
+       AVG( SalesAmount)  OVER (PARTITION BY ProductKey
+                              ORDER BY Year, Month
+                              ROWS 2 PRECEDING)  AS MovAvg
+FROM SALES;
+Sample window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 15/18
+================================================================================
+PAGE 16 of 18
+================================================================================
+
+Window framing
+Another example, a year-to-date sum of sales by product
+Processing of a query, opens a window with the tuples of the current
+product and year ordered by month
+AVG() is applied to all rows before the current row (ROWS UNBOUNDED
+PRECEDING )
+      
+SELECT ProductKey,  Year, Month, SalesAmount,
+       SUM( SalesAmount)  OVER (PARTITION BY ProductKey,  Year
+                              ORDER BY Month
+                              ROWS UNBOUNDED PRECEDING)  AS YTD
+FROM SALES;
+Sample window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 16/18
+================================================================================
+PAGE 17 of 18
+================================================================================
+
+Window framing
+      
+SELECT ProductKey,  Year, Month, SalesAmount,
+       SUM( SalesAmount)  OVER (PARTITION BY ProductKey,  Year
+                              ORDER BY Month
+                              ROWS UNBOUNDED PRECEDING)  AS YTD
+FROM SALES;
+Sample window framing
+TOP                    ISIT312 Big Data Management, SIM S2 2025 17/18
+================================================================================
+PAGE 18 of 18
+================================================================================
+
+References
+A. VAISMAN, E. ZIMANYI, Data Warehouse Systems: Design and
+Implementation, Chapter 5 Logical Data Warehouse Design, Springer
+Verlag, 2014
+TOP                    ISIT312 Big Data Management, SIM S2 2025 18/18

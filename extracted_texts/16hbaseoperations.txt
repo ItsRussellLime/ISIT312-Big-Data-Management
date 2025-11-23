@@ -1,0 +1,395 @@
+
+================================================================================
+PAGE 1 of 21
+================================================================================
+
+    ISIT312 Big Data Management
+HBase Operations
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 21
+================================================================================
+
+HBase Operations
+Outline
+HBase shell
+Data deﬁnition commands
+Data manipulation commands
+HBase Java API
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/21
+================================================================================
+PAGE 3 of 21
+================================================================================
+
+HBase shell
+HBase  provides extensible JRuby-based (Java Interactive Ruby - JIRB) shell
+as a feature to execute some commands
+The shell is a typical Read–Eval–Print-Loop (REPL) shell also known as a
+language shell
+It is a simple, interactive computer programming environment that takes
+single user inputs evaluates them, and returns the result to the user; a
+program written in a REPL  environment is executed piecewise
+It means that HBase shell allows for computation of Ruby scripts and
+brings all features enabled in JIRB shell
+It allows to process a script of HBase  commands saved in a ﬁle file-
+name.hb  in the following way:
+source 'file-name.hb'
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/21
+================================================================================
+PAGE 4 of 21
+================================================================================
+
+HBase Operations
+Outline
+HBase shell
+Data deﬁnition commands
+Data manipulation commands
+HBase Java API
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/21
+================================================================================
+PAGE 5 of 21
+================================================================================
+
+Data definition commands
+In Hbase , a set of data deﬁnition  commands includes: create , list ,
+describe , disable , disable_all , enable , enable_all , drop ,
+drop_all , show_filters , alter , alter_status
+Create a table 'student'  with a column family 'personal'
+Show a structure of a table 'student'
+Implement a column family 'personal'  in transient memory
+Add a column family 'uni'  to a table 'student'
+create 'student', 'personal' 
+ HBase shell
+describe 'student' 
+ HBase shell
+alter 'student',{NAME=>'personal', IN_MEMORY=>true}  
+ HBase shell
+alter 'student',{NAME=>'uni', VERSIONS=>'4'}  
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/21
+================================================================================
+PAGE 6 of 21
+================================================================================
+
+Data definition commands
+Delete a column family 'uni' from a table 'student'
+Add a column family 'university' to a table student and allow for 5
+versions in each cell in the column family
+Increase a number of allowed versions in a column family
+'personal' to 3
+alter 'student', 'delete'=>'uni' 
+ HBase shell
+alter 'student',{NAME=>'university', VERSIONS=>5 } 
+ HBase shell
+alter 'student',{NAME=>'personal', VERSIONS=>3 } 
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/21
+================================================================================
+PAGE 7 of 21
+================================================================================
+
+HBase Operations
+Outline
+HBase shell
+Data deﬁnition commands
+Data manipulation commands
+HBase Java API
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/21
+================================================================================
+PAGE 8 of 21
+================================================================================
+
+Data Manipulation commands
+In Hbase , a set of data manipulation  commands includes: count , put,
+get, delete , delete_all , truncate , scan
+Put a value 'James'  into a cell in a column family 'personal' ,
+qualiﬁcation 'first-name' , row key '007' ,
+Put a value 'Bond' into a cell in a column family 'personal' ,
+qualiﬁcation 'last-name' , row key '007'
+Put a value '01-OCT-1960' into a cell in a column family
+'personal' , qualiﬁcation dob' , row key '007' ,
+put 'student', '007','personal:first-name', 'James' 
+ HBase shell
+put 'student', '007','personal:last-name', 'Bond' 
+ HBase shell
+put 'student', '007','personal:dob', '01-OCT-1960' 
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/21
+================================================================================
+PAGE 9 of 21
+================================================================================
+
+Data Manipulation commands
+List the contents of a table 'student'
+Put a value '02-OCT-1960'  as the second version into a cell in a
+column family 'personal' , qualiﬁcation dob' , row key '007' ,
+Get no more than 5 versions of a cell 'dob' in a column family
+'personal' from a row '007' in a table 'student'
+Get no more than 5 versions of a cell 'dob'  in a column family
+'personal' , from a table 'student'
+scan 'student' 
+ HBase shell
+put 'student', '007','personal:dob', '02-OCT-1960' 
+ HBase shell
+get 'student', '007',{COLUMN=>'personal:dob', VERSIONS=>5 } 
+ HBase shell
+scan 'student',{COLUMN=>'personal:dob', VERSIONS=>5 } 
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/21
+================================================================================
+PAGE 10 of 21
+================================================================================
+
+Data Manipulation commands
+Get all column families in a row '666' in a table 'student'
+Get no more than 5 versions of values from all cells in a column family
+'grade'  in a row '666'  in a table 'student'
+Get no more than 5 versions of values from a cell 'CSCI235' in a
+column family 'grade' in a row '666'  in a table 'student'
+Get no more than 5 versions of values from a cell 'dob' in a column
+family 'grade' in a row '666' in a table 'student'
+get 'student', '666' 
+ HBase shell
+get 'student', '666',{COLUMN=>'grade', VERSIONS=>5 } 
+ HBase shell
+get 'student', '666',{COLUMN=>'grade:CSCI235', VERSIONS=>5 } 
+ HBase shell
+get 'student', '007',{COLUMN=>'personal:dob', VERSIONS=>5 } 
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/21
+================================================================================
+PAGE 11 of 21
+================================================================================
+
+Data Manipulation commands
+Count total number of rows in a table 'student'
+Get entire table 'student' , one version per cell
+Get entire table 'student' , at most 5 versions per cell
+Get all cells 'dob'  from in a column family 'personal' from entire
+table'student' , at most 5 versions per cell
+count 'student'
+ HBase shell
+scan 'student'
+ HBase shell
+scan 'student',{VERSIONS=>5 }
+ HBase shell
+scan 'student',{COLUMNS=>'personal:dob', VERSIONS=>5 }
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/21
+================================================================================
+PAGE 12 of 21
+================================================================================
+
+Data Manipulation commands
+Get all cells from the column families 'personal'  and
+'university'  from entire table 'student'
+Get at most 5 versions of cells 'dob' with timestamps in a range
+[1,1502609828830] , from a column family 'personal' from
+entire table 'student'
+Get at most 5 versions of cells 'dob' with timestamps in a range
+[1,1502609828830] , from a column family 'personal'  from entire
+table 'student'
+scan 'student',{COLUMNS=>['personal', 'university']}
+ HBase shell
+scan 'student',{COLUMNS=>'personal:dob', TIMERANGE=>[1 ,1502609828830],
+         VERSIONS=>5 }
+HBase shell
+scan 'student',{COLUMNS=>'personal:dob',
+         FILTER=>"TimestampsFilter(1,1502609828830)", VERSIONS=>5 }
+HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/21
+================================================================================
+PAGE 13 of 21
+================================================================================
+
+Data Manipulation commands
+Get all cells whose name is >= than 'f' in a table 'student'
+Get all rows from a table 'student' that have value of a cell >= than 'J'
+Get all rows from a table 'student' that have value of a cell in a range
+['J','K']
+Get all values of cells 'dob' in a column family 'personal' from rows
+in a table 'student' where a cell 'dob' has a value '02-OCT-1960'
+scan 'student',{FILTER=>"QualifierFilter(>=,'binary:f')"}
+ HBase shell
+scan 'student',{FILTER=>"ValueFilter(>=,'binary:J')"}  
+ HBase shell
+scan 'student',{FILTER=>"ValueFilter(>=,'binary:J') AND 
+                ValueFilter(<=,'binary:K')"}  
+HBase shell
+scan 'student',{COLUMNS=>'personal:dob', FILTER=>
+                "QualifierFilter(=,'binary:dob') AND 
+        ValueFilter(=,'binary:02-OCT-1960')"}
+HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/21
+================================================================================
+PAGE 14 of 21
+================================================================================
+
+Data Manipulation commands
+Delete a cell 'CSCI235' from a column family 'student'  in a row
+'666'  in a table 'student'
+Delete entire row '007'  from a table 'student'
+delete 'student', '666','grade:CSCI235' 
+ HBase shell
+deleteall 'student',  '007
+ HBase shell
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/21
+================================================================================
+PAGE 15 of 21
+================================================================================
+
+HBase Operations
+Outline
+HBase shell
+Data deﬁnition commands
+Data manipulation commands
+HBase Java API
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/21
+================================================================================
+PAGE 16 of 21
+================================================================================
+
+HBase Java API
+HBase Java Application Program Interface  allows to access HBase tables
+from programs written in Java
+The client APIs provide both data deﬁnition and data manipulation
+features
+Creating a table 'my-table'  and column families 'Address'  and
+'Name'
+import org.apache.hadoop.conf.Configuration; 
+import org.apache.hadoop.hbase.HBaseConfiguration; 
+import org.apache.hadoop.hbase.HColumnDescriptor; 
+import org.apache.hadoop.hbase.HTableDescriptor; 
+import org.apache.hadoop.hbase.TableName; 
+import org.apache.hadoop.hbase.client.HBaseAdmin; 
+Java
+public class CreateTable { 
+  public static void main(String[] args) throws Exception { 
+    Configuration conf = HBaseConfiguration.create(); 
+    HBaseAdmin admin = new HBaseAdmin(conf); 
+    HTableDescriptor tableDescriptor = new HTableDescriptor(TableName.valueOf("my-table")); 
+    tableDescriptor.addFamily(new HColumnDescriptor("Address")); 
+    tableDescriptor.addFamily(new HColumnDescriptor("Name")); 
+    admin.createTable(tableDescriptor); 
+    boolean tableAvailable = admin.isTableAvailable("my-table"); 
+    System.out.println("tableAvailable = " + tableAvailable); } }
+Java
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/21
+================================================================================
+PAGE 17 of 21
+================================================================================
+
+HBase Java API
+Inserting data into HBase table  'my-table'
+public class PutRow { 
+  public static void main( String[] args)  throws Exception { 
+    Configuration conf =  HBaseConfiguration. create(); 
+    HTable table =  new HTable(conf, "my-table"); 
+    Put put = new Put(Bytes.toBytes("007")); 
+    put.add(Bytes.toBytes("Address"),Bytes. toBytes("City"),Bytes. toBytes("Dapto")); 
+    put.add(Bytes.toBytes("Address"),Bytes. toBytes("Street"),Bytes. toBytes("Ellenborough"  
+    put.add(Bytes.toBytes("Name"),Bytes. toBytes("First"),Bytes. toBytes("James")); 
+    put.add(Bytes.toBytes("Name"),Bytes. toBytes("Last"),Bytes. toBytes("Bond")); 
+    table. put(put); 
+    table. flushCommits(); 
+    table. close(); 
+  } 
+} 
+Java
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/21
+================================================================================
+PAGE 18 of 21
+================================================================================
+
+HBase Java API
+Getting data from HBase table  'my-table'
+import java. util.Map;
+import java. util.NavigableMap
+Java
+public class GetRow {
+    public static void main( String[] args)  throws Exception {
+        Configuration conf =  HBaseConfiguration. create();
+        HTable table =  new HTable(conf, "my-table");
+        Get get = new Get(Bytes.toBytes("007"));
+        get. setMaxVersions( 3);
+        get. addFamily( Bytes.toBytes("Address"));
+        get. addColumn( Bytes.toBytes("Name"), Bytes.toBytes("First"));
+        get. addColumn( Bytes.toBytes("Name"), Bytes.toBytes("Last"));
+Java
+// Get a specific value
+        Result result =  table.get(get); 
+        String row =  Bytes.toString( result.getRow());
+Java
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/21
+================================================================================
+PAGE 19 of 21
+================================================================================
+
+HBase Java API
+Getting data from HBase table  'my-table'
+     
+   String specificValue =  Bytes.toString( result.getValue( Bytes.toBytes("Address"),
+                                         Bytes. toBytes("City")));
+   System. out.println("Latest Address:City is: " + specificValue);
+          specificValue =  Bytes.toString( result.getValue( Bytes.toBytes("Address"),
+                                 Bytes. toBytes("Street")));
+   System. out.println("Latest Address:Street is: " + specificValue);
+          specificValue =  Bytes.toString( result.getValue( Bytes.toBytes("Name"),
+                                 Bytes. toBytes("First")));
+   System. out.println("Latest Name:First is: " + specificValue);
+          specificValue =  Bytes.toString( result.getValue( Bytes.toBytes("Name"),
+                                 Bytes. toBytes("Last")));
+   System. out.println("Latest Name:Last is: " + specificValue)  
+Java
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/21
+================================================================================
+PAGE 20 of 21
+================================================================================
+
+HBase Java API
+// Traverse entire returned row
+        System. out.println("Row key: " + row);
+        NavigableMap>> map =  result.getMap();
+        for (Map.Entry>> navigableMapEntry :  map.entrySet()) {
+            String family =  Bytes.toString( navigableMapEntry. getKey());
+            System. out.println("\t" + family);
+            NavigableMap>  familyContents =  navigableMapEntry. getValue();
+            for (Map.Entry> mapEntry :  familyContents. entrySet()) {
+                String qualifier =  Bytes.toString( mapEntry. getKey());
+                System. out.println("\t\t" + qualifier);
+                NavigableMap qualifierContents =  mapEntry. getValue();
+                for (Map.Entry entry :  qualifierContents. entrySet()) {
+                    Long timestamp =  entry.getKey();
+                    String value =  Bytes.toString( entry.getValue());
+                    System. out.printf("\t\t\t%s, %d\n",  value, timestamp);
+                }
+            }
+        }
+        table. close();
+    }
+} 
+Java
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/21
+================================================================================
+PAGE 21 of 21
+================================================================================
+
+References
+HBase shell commands,
+https://learnhbase.wordpress.com/2013/03/02/hbase-
+shell-commands/
+HBase shell and General commands,
+https://www.guru99.com/hbase-shell-general-
+commands.html#4
+HBase Java API, https://dzone.com/articles/handling-big-
+data-hbase-part-4
+Kerzner M., Maniyam S., HBase Design Patterns, Packt Publishing 2014
+(Available from UoW Library)
+Jiang, Y. HBase Adminstration Cookbook, Pack Publishing, 2012
+(Available from UoW Library)
+Dimiduk N., Khurana A., HBase in Action, Mannig Publishers, 2013
+Spaggiari J-M., O'Dell K., Architecting HBase Applications, O'Reilly, 2016
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/21

@@ -1,0 +1,804 @@
+
+================================================================================
+PAGE 1 of 41
+================================================================================
+
+        ISIT312 Big Data Management
+Spark Operations
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+SQL Module
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 2/41
+================================================================================
+PAGE 3 of 41
+================================================================================
+
+The Programming Language Scala
+Spark  has built-in APIs for Java, Scala, and Python, and is also integrated
+with R
+Among all languages, Scala is the most supported language
+Also, Spark  project is implemented using Scala
+Therefore, we choose Scala as our working language in Spark
+Scala is a Java-like programming language which uniﬁes object-oriented
+and functional programming
+Scala is a pure object-oriented language in the sense that every value is
+an object
+Types and behaviour of objects are described by classes
+Scala is a functional programming language in the sense that every
+function is a value
+Nesting of function deﬁnitions and higher-order functions are naturally
+supportedTOP                    ISIT312 Big Data Management,  SIM S4 2025 3/41
+================================================================================
+PAGE 4 of 41
+================================================================================
+
+The Programming Language Scala
+Hello World ! in Scala
+Instead of including main method, it can be extended with App trait
+Using command line arguments
+      
+object Hello {
+    def main(args: Array[String]) = {
+        println("Hello, world")
+    }
+}
+Hello World ! in Scala
+object Hello2 extends App {
+println("Hello, world")
+}
+Extending App trait
+object HelloYou extends App {
+    if (args.size == 0)
+        println("Hello, you")
+    else
+        println("Hello, " + args(0))
+}
+Command line arguments
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 4/41
+================================================================================
+PAGE 5 of 41
+================================================================================
+
+The Programming Language Scala
+Di!erence between var, val, and def
+When lazy keyword is used then a value is only computed when it is
+needed
+      
+var x = 7
+x = x * 2
+Variable
+val x = 7
+x = x * 2
+'error: reassignment to val'
+Value
+def hello(name: String) = "Hello : " + name
+hello("James") // "Hello : James"
+hello("")      // "Hello : "
+Function declaration
+lazy val x = {
+  println("calculating value of x")
+  13 }
+val y = {
+  println("calculating value of y")
+  20 }
+Lazy evaluation
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 5/41
+================================================================================
+PAGE 6 of 41
+================================================================================
+
+The Programming Language Scala
+Deﬁning a class
+      
+class Point(var x: Int, var y: Int) {
+Class Point
+  def move(dx: Int, dy: Int): Unit = {
+    x = x + dx
+    y = y + dy
+  }
+Method move
+  override def toString: String =
+    s"($x, $y)"
+}
+Method toString
+val point1 = new Point(2, 3)
+println(point1.x)            // 2
+println(point1)              // prints (2, 3)
+Applications
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 6/41
+================================================================================
+PAGE 7 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+SQL Module
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 7/41
+================================================================================
+PAGE 8 of 41
+================================================================================
+
+Quick Start
+To open Scala version of Spark shell  in standalone mode process the
+following command
+To open Spark shell  shell with YARN, process the following command
+    
+bin/spark-shell --master local[*]
+Starting Spark shell in standalone mode
+      
+bin/spark-shell --master yarn
+Starting Spark shell with Yarn
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 8/41
+================================================================================
+PAGE 9 of 41
+================================================================================
+
+Quick Start
+A SparkSession  instance is an entry to a Spark  application
+You can use SparkSession  instance spark to interact with Spark  and
+to develop your data processing pipeline
+For example,If you type spark  in the spark-shell interface then you get the following
+messages-
+   
+res0: org.apache.spark.sql.SparkSession = org.apache.spark.sql.SparkSession@...
+Message
+  
+val myRange = spark.range(1000).toDF("number")
+myRange: org.apache.spark.sql.DataFrame = [number: bigint]
+Creating Data Frame
+  
+myRange.show(2)
++------+
+|number|
++------+
+|     0|
+|     1|
++------+
+Listing Data Frame
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 9/41
+================================================================================
+PAGE 10 of 41
+================================================================================
+
+Quick Start
+Sample processing of a ﬁle README.md
+       
+val YOUR_SPARK_HOME = "path-to-your-Spark-home"
+Setting Spark Home folder
+   
+val textFile =  spark.read.textFile( "$YOUR_SPARK_HOME/README.md")
+textFile:  org.apache.spark.sql.Dataset[String] = [value: string]
+Reading a text file
+   
+textFile. count()
+res0: Long = 104
+Counting rows
+   
+textFile. first()
+res1: String = # Apache Spark
+Reading the first row
+textFile. filter(line =>line.contains( "Spark")).count()
+res2: Long = 20
+Filtering and counting rows
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 10/41
+================================================================================
+PAGE 11 of 41
+================================================================================
+
+Quick Start
+More operations on a ﬁle
+       
+textFile.map(line => line.split(" ").size).reduce((a, b) => if (a > b) a else b)
+res3: Int = 22
+Counting number of words in the longest line
+   
+val wordCounts = textFile.flatMap(line => line.split("")).groupByKey(identity).count()
+wordCounts: org.apache.spark.sql.Dataset[(String, Long)] = [value: string, count(1): bigint]
+Filtering and counting rows
+   
+wordCounts.show(2)
++----------+--------+
+|     value|count(1)|
++----------+--------+
+|    online|       1|
+|    graphs|       1|
++----------+--------+
+only showing top 2 rows
+Listing results
+   
+wordCounts.collect()
+res7: Array[(String, Long)] = Array((online,1), (graphs,1), (["Parallel,1), (["Building,1), (thread,1),
+(documentation,3), (command,,2), (abbreviated,1), (overview,1), (rich,1), (set,2), ...
+Listing results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 11/41
+================================================================================
+PAGE 12 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+Spark SQL Module
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 12/41
+================================================================================
+PAGE 13 of 41
+================================================================================
+
+Self-Contained Application
+A sample self-contained application
+    
+import org. apache.spark.sql.SparkSession
+object SimpleApp {
+  def main( args: Array[String]) {
+    val logFile =  "YOUR_SPARK_HOME/README.md"
+   // Should be some file on your system
+   val spark =  SparkSession. builder
+    .appName("Simple Application")
+    .config("spark.master",  "local[*]")
+    .getOrCreate()
+  val logData =  spark.read.textFile( logFile).cache()
+  val numAs =  logData. filter(line => line.contains( "a")).count()
+  val numBs =  logData. filter(line => line.contains( "b")).count()
+  println( s"Lines with a: $numAs, Lines with b: $numBs")
+  spark.stop()
+  }
+}
+SimpleApp.scala
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 13/41
+================================================================================
+PAGE 14 of 41
+================================================================================
+
+Self-Contained Application
+Compiling Scala source code using scalac
+Creating a jar ﬁle in the following way
+Process it with Spark-shell in the following way
+       
+scalac -classpath "$SPARK_HOME/jars/*" SimpleApp. scala
+Compiling Scala source code
+       
+jar cvf app. jar SimpleApp*.class
+Creating jar
+$SPARK_HOME/ bin/spark-submit --master local[*] --class SimpleApp app. jar
+Processing
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 14/41
+================================================================================
+PAGE 15 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+Spark SQL Module
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 15/41
+================================================================================
+PAGE 16 of 41
+================================================================================
+
+Web UI
+Each driver program has a Web UI, typically on port 4040
+Spark Web UI displays information about running tasks, executors, and
+storage usage.
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 16/41
+================================================================================
+PAGE 17 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+Spark SQL Module
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 17/41
+================================================================================
+PAGE 18 of 41
+================================================================================
+
+Operations on Resilient Distributed Datasets
+(RDDs)
+Operations on RDDs are performed on raw Java or Scala objects
+Creating a simple RDD with words and distributing over 2 partitions
+Eliminating duplicates and counting words
+Filtering
+       
+val myCollection = "Spark The Definitive Guide : Big Data Processing Made Simple".split(" ")
+val words = spark.sparkContext.parallelize(myCollection, 2)
+Creating RDD
+words.distinct().count()
+Distinct and counting
+      
+def startsWithS(individual:String) = { individual.startsWith("S") }
+Filtering function
+val onlyS = words.filter(word => startsWithS(word))
+Filtering
+onlyS.collect()
+Results of filtering
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 18/41
+================================================================================
+PAGE 19 of 41
+================================================================================
+
+Operations on Resilient Distributed Datasets
+(RDDs)
+Sorting of RDD uses sortBy method and a function that extracts a value
+from the objects
+Random split into Array
+Reduce RDD to one value
+       
+words.sortBy(word => word.length() * -1).take(2))
+Sorting
+    
+val fiftyFiftySplit = words.randomSplit(Array[Double](0.5, 0.5))
+Split into Array
+def wordLengthReducer(leftWord:String, rightWord:String): String = {
+  if (leftWord.length >= rightWord.length)
+    return leftWord
+  else
+   return rightWord }
+Reducing
+words.reduce(wordLengthReducer)
+Reducing
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 19/41
+================================================================================
+PAGE 20 of 41
+================================================================================
+
+Operations on Resilient Distributed Datasets
+(RDDs)
+Some operations on RDDs are available on key-value pairs
+The most common ones are distributed "shu"e" operations, such as
+grouping or aggregating the elements by a key
+For example, reduceByKey operation on key-value pairs can be used to
+count how many times each line of text occurs in a ﬁle
+Some of the transformations of RDDs
+val lines = sc.textFile("data.txt")
+val pairs = lines.map(s => (s, 1))
+val counts = pairs.reduceByKey((a, b) => a + b)
+Sorting
+map(func):                      passes each element of RDD through a function
+filter(func):                   selects all element for which a function returms true
+sample(withReplacement, fraction, seed): extracts  sample from RDD
+union(otherDataset):            unions two RRDs
+intersection(otherDataset):     finds intersection of two RDDs
+distinct([numPartitions])):     eliminates duplicates
+groupByKey([numPartitions]):    when called on RDD with (K, V) pairs, returns RDD with (K, Iterable) pairs
+sortByKey([ascending], [numPartitions]: when called on (K, V) pairs where K implements Ordered,
+Transformations
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 20/41
+================================================================================
+PAGE 21 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+Spark SQL Module
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 21/41
+================================================================================
+PAGE 22 of 41
+================================================================================
+
+Operations on Datasets
+Operations on a Dataset start from creation of case class
+Dataset supports all operations of DataFrame
+  
+case class Person(name: String, age: Long)
+defined class Person
+Creating case class
+   
+val caseClassDS = Seq(Person("Andy", 32)).toDS()
+caseClassDS: org.apache.spark.sql.Dataset[Person] = [name: string, age: bigint]
+Creating Dataset
+   
+caseClassDS.show()
++----+---+
+|name|age|
++----+---+
+|Andy| 32|
++----+---+
+Listing Dataset
+caseClassDS.select($"name").show()
++----+
+|name|
++----+
+|Andy|
+Using a Dataset
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 22/41
+================================================================================
+PAGE 23 of 41
+================================================================================
+
+Operations on Datasets
+Operations on Datasets  start from creation of case class
+Next we create a DataFrame
+Finally, DataFrame  is casted to Dataset
+Filtering a Dataset
+Mapping a Dataset
+      
+case class Flight(DEST_COUNTRY_NAME: String, ORIGIN_COUNTRY_NAME: String, count: BigInt)
+Creating case class
+val flightsDF = spark.read.parquet("/mnt/defg/chapter-1-data/parquet/2010-summary.parquet/")
+Creating DataFrame
+val flights = flightsDF.as[Flight]
+Creating Dataset
+def originIsDestination(flight_row: Flight): Boolean = {
+return flight_row.ORIGIN_COUNTRY_NAME == flight_row.DEST_COUNTRY_NAME}
+Defining a function
+flights.filter(flight_row => originIsDestination(flight_row)).first()
+ Filtering
+val destinations = flights.map(f => f.DEST_COUNTRY_NAME)
+ MappingTOP                    ISIT312 Big Data Management,  SIM S4 2025 23/41
+================================================================================
+PAGE 24 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+Spark SQL Module
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 24/41
+================================================================================
+PAGE 25 of 41
+================================================================================
+
+Operations on DataFrames
+Dataset and DataFrame  are the data abstractions for Spark SQL
+Dataset is a distributed collection of data
+DataFrame  is a Dataset organized into named columns.It supports the use of self-deﬁned functions to process data
+For example, map  and reduce  functions in the previous slides
+Dataset is typed; typing is checked at compiling time-
+-
+-
+It is conceptually equivalent to a table in a relational database or a data frame
+in R/Python
+To use self-deﬁned functions, you need to register them with Spark
+DataFrame  is untyped, i.e., typing is checked at runtime
+DataFrame  is more performance-optimal than Dataset-
+-
+-
+-
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 25/41
+================================================================================
+PAGE 26 of 41
+================================================================================
+
+Operations on DataFrames
+DataFrame  can be created in the following way
+   
+val df = spark.read.json("people.json")
+df.show()
+Creating a DataFrame
+    
++----+-------+
+| age| name  |
++----+-------+
+|null|Michael|
+| 30 | Andy  |
+| 19 | Justin|
++----+-------+
+Results
+ 
+df.printSchema()
+Results
+    
+root
+|-- age: long (nullable = true)
+|-- name:  string (nullable = true)
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 26/41
+================================================================================
+PAGE 27 of 41
+================================================================================
+
+Operations on DataFrames
+Select on a DataFrame
+      
+df.select($"name", $"age" + 1).show()
+Selecting from a DataFrame
+            
++-------+---------+
+| name  |(age + 1)|
++-------+---------+
+|Michael|     null|
+|   Andy|       31|
+| Justin|       20|
++-------+---------+
+Results
+df.filter($"age" > 21).show()
+Filtering a DataFrame
+            
++---+----+
+|age|name|
++---+----+
+| 30|Andy|
++---+----+
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 27/41
+================================================================================
+PAGE 28 of 41
+================================================================================
+
+Operations on DataFrames
+Count people by age
+df.groupBy("age".count().show()
+Counting in a DataFrame
+            
++----+-----+
+| age|count|
++----+-----+
+|  19|    1|
+|null|    1|
+|  30|    1|
++----+-----+
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 28/41
+================================================================================
+PAGE 29 of 41
+================================================================================
+
+Operations on DataFrames
+Register a DataFrame  as SQL temporary view
+df.createOrReplaceTempView( "people")
+val sqlDF =  spark.sql("SELECT * FROM people")
+sqlDF.show()
+Registering and selecting from  DataFrame
+                
++----+-------+
+| age| name  |
++----+-------+
+|null|Michael|
+|30  | Andy  |
+|19  | Justin|
++----+-------+
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 29/41
+================================================================================
+PAGE 30 of 41
+================================================================================
+
+Operations on DataFrames
+When to use DataFrames  ?
+Except for the following few cases, you can use them interchangeable (if
+performance is not a concern). You also can convert one to the other
+easily.
+In the Bigdata pipeline, you read an unstructured data source, for example, a
+text ﬁle as a Dataset and continue processing the data
+You can directly read an structured source like Hive table, JSON document as a
+DataFrame
+If you expect to use self-deﬁned function easily, especially in the data cleaning
+or preprocessing stage of the pipeline, you should use a Dataset-
+-
+-
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 30/41
+================================================================================
+PAGE 31 of 41
+================================================================================
+
+Operations on DataFrames
+Create a Dataset of Person  objects from a text ﬁle and convert it to a
+DataFrame
+val peopleDF =  spark.sparkContext
+.textFile( "examples/src/main/resources/people.txt")
+.map(_.split(","))
+.map(attributes => Person(attributes( 0), attributes( 1).trim.toInt))
+.toDF()
+Converting a Dataset to DataFrame
+      
+peopleDF:  org.apache.spark.sql.DataFrame = [name: string, age: bigint]
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 31/41
+================================================================================
+PAGE 32 of 41
+================================================================================
+
+Operations on DataFrames
+Convert DataFrame  to Dataset
+      
+case class  Employee( name: String, salary: Long)
+val ds =
+     spark. read.json(".../examples/src/main/resources/employees.json").as[ Employee]
+Converting a Dataset to DataFrame
+      
+ds: org.apache.spark.sql.Dataset[Employee]  = [name: string, salary: bigint]
+Results
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 32/41
+================================================================================
+PAGE 33 of 41
+================================================================================
+
+Operations on DataFrames
+Spark  DataFrame /Dataset support two types of operations:
+transformations  and actions
+Transformations are operations on DataFrames /Datasets  that return a
+new DataFrame /Dataset
+Actions are operations that return a result to the driver program or write
+it to storage, and kick o! a computation
+Return type di!erence: transformations  return DataFrames /Datasets ,
+whereas actions return some other data type
+Spark  treats the two operations very di!erentlyFor example select() , groupBy() , map() , and filter() -
+For example show() , count() , and first() -
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 33/41
+================================================================================
+PAGE 34 of 41
+================================================================================
+
+Operations on DataFrames
+Transformations  are lazily evaluated, meaning that Spark  will not begin
+to execute until it sees an action
+Instead, Spark  internally records metadata to indicate that some
+transformation operation has been requested
+For example transformation  creates another DataFrame
+Action triggers the computation
+val sqlDF =  spark.sql("SELECT * FROM people")
+Creating a DataFrame
+  
+sqlDF.show()
+Action on a DataFrame
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 34/41
+================================================================================
+PAGE 35 of 41
+================================================================================
+
+Operations on DataFrames
+The lazy evaluation to reduce the number of passes it has to take over
+the dataset
+In Hadoop MapReduce , developers often have to consider how to group
+together operations to minimize the number of MapReduce passes
+In Spark, there is no substantial beneﬁt to writing a single complex map
+instead of chaining together many simple operations
+Thus, users are free to organize their program into smaller, more
+manageable operations
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 35/41
+================================================================================
+PAGE 36 of 41
+================================================================================
+
+Spark Operations
+Outline
+The Programming Language Scala
+Quick Start
+Self Contained Application
+Web User Interface
+Operations on Resilient Distributed Datasets (RDDs)
+Operations on Datasets
+Operations on DataFrames
+Spark SQL
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 36/41
+================================================================================
+PAGE 37 of 41
+================================================================================
+
+Spark SQL
+Spark SQL  is a Spark  module for general data processing and analytics
+It can be used for all sorts of data, from unstructured log ﬁles to semi-
+structured CSV  ﬁles and highly structured Parquet ﬁles
+To interact with Spark SQL , you can either use SQL or Spark Structured
+API, or both
+The same execution engine is used, independent of which API/language
+you use to express the computation
+The APIs of Spark SQL  provide a rich set of pre-built, high-level
+operations for accomplishing sophisticate data processing and ETL jobs,
+and mechanism to implement your own operations, for example self-
+deﬁned functions and aggregations
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 37/41
+================================================================================
+PAGE 38 of 41
+================================================================================
+
+Spark SQL
+Spark SQL  has two data abstractions
+Both are distributed table-like collections with well-deﬁned rows and
+columns.DataFrame
+Dataset (available in Scala/Java APIs, but not Python/R APIs)
+DataFrame  can be represented as SQL tables and views-
+-
+-
+DataFrame  vs. spreadsheet
+ -
+TOP                    ISIT312 Big Data Management,  SIM S4 2025 38/41
+================================================================================
+PAGE 39 of 41
+================================================================================
+
+Spark SQL
+Spark SQL  allows to code SQL statements in Scala, Java and Python
+language APIs.
+To use SQL to manipulate a DataFrame , we ﬁrst need to create a
+temporal view for it
+All standard SQL statements + functions are applicable in Spark SQL
+Spark implements a subset of ANSI SQL:2003
+df.createOrReplaceTempView( "dfTable")
+Creating a temporal view
+TOP               ISIT312 Big Data Management,  Session 2, 2022 39/41
+================================================================================
+PAGE 40 of 41
+================================================================================
+
+Spark SQL
+Using SQL
+spark.sql(
+"SELECT DEST_COUNTRY_NAME, sum(count) 
+ FROM dfTable
+ GROUP BY DEST_COUNTRY_NAME"
+)
+.where("DEST_COUNTRY_NAME like 'S%'")
+.where("'sum(count)' > 10")
+.show(2)
+Applying sql method
+      
++-----------------+----------+
+|DEST_COUNTRY_NAME| sum(count)|
++-----------------+----------+
+| Senegal         |  40       |
+| Sweden          |  118      |
++-----------------+----------+
+Results
+TOP               ISIT312 Big Data Management,  Session 2, 2022 40/41
+================================================================================
+PAGE 41 of 41
+================================================================================
+
+References
+The Scala Programming Language
+A Gentle Introduction to Spark, Databricks, (Available in READINGS
+folder)
+RDD Programming Guide
+Spark SQL, DataFrames and Datasets Guide
+Karau H., Fast data processing with Spark Packt Publishing, 2013
+(Available from UOW Library)
+Srinivasa, K.G., Guide to High Performance Distributed Computing: Case
+Studies with Hadoop, Scalding and SparkSpringer, 2015 (Available from
+UOW Library)
+Chambers B., Zaharia M.,Spark: The Deﬁnitive Guide, O'Reilly 2017
+Perrin J-G., Spark in Action, 2nd ed., Manning Publications Co. 2020
+TOP               ISIT312 Big Data Management,  SIM S4 2025 41/41

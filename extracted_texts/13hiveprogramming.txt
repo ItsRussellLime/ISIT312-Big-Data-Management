@@ -1,0 +1,503 @@
+
+================================================================================
+PAGE 1 of 28
+================================================================================
+
+         ISIT312 Big Data Management
+Hive Programming
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 28
+================================================================================
+
+Hive Programming
+Outline
+Data Selection and Scope
+Data Manipulation
+Data Aggregation and Sampling
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/28
+================================================================================
+PAGE 3 of 28
+================================================================================
+
+Data Selection and Scope
+To query data Hive provides SELECT statement
+Typically SELECT statement projects the rows satisfying the query
+conditions speciﬁed in the WHERE clause and returns the result set
+SELECT statement is usually used with FROM, DISTINCT, WHERE, and
+LIMIT keywords
+SELECT C_NAME,  C_PHONE
+FROM customer
+WHERE C_ACCTBAL >  0
+LIMIT 2;
+SELECT statement with LIMIT clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/28
+================================================================================
+PAGE 4 of 28
+================================================================================
+
+Data Selection and Scope
+Multiple SELECT statements can be combined into complex queries
+using nested queries  or subqueries
+Subqueries  can use Common Table Expressions  (CTE ) in the format of
+WITH clause
+When using subqueries , an alias  should be given for the subquery
+      
+WITH cord AS ( SELECT *
+               FROM customer JOIN orders
+                             ON c_custkey =  o_custkey)
+SELECT c_name,  c_phone,  o_orderkey,  o_orderstatus
+FROM cord;
+WITH clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/28
+================================================================================
+PAGE 5 of 28
+================================================================================
+
+Data Selection and Scope
+Multiple SELECT statements can be combined into complex queries
+using nested queries  or subqueries
+Nested queries  can use SELECT statement wherever a table is expected
+or a scalar value is expected
+      
+SELECT c_name,  c_phone,  o_orderkey,  o_orderstatus
+FROM ( SELECT *
+       FROM customer JOIN orders
+                     ON c_custkey =  o_custkey)  cord
+Nested query
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/28
+================================================================================
+PAGE 6 of 28
+================================================================================
+
+Data Selection and Scope
+When inner join  is performed between multiple tables the MapReduce
+jobs are created to process data in HDFS
+It is recommended to put the big table right at the end for better
+because the last table in the sequence is streamed through the reducers
+where the others are bu !ered in the reducer by default
+      
+SELECT /*+ STREAMTABLE(lineitem) */ c_name,  o_orderkey,  l_linenumber
+FROM customer JOIN orders
+              ON c_custkey =  o_custkey
+              JOIN lineitem
+              ON l_orderkey =  o_orderkey;
+Inner join
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/28
+================================================================================
+PAGE 7 of 28
+================================================================================
+
+Data Selection and Scope
+Outer join  (left, right, and full) and cross join preserve their HQL
+semantics
+Map join  means that join is computed only by map job without reduce
+job
+In map join  all data are read from a small table to memory and
+broadcasted to all maps
+During map phase  each row in from a big table is compared with the
+rows in small tables against join conditions
+Join performance is improved because there is no reduce phase
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/28
+================================================================================
+PAGE 8 of 28
+================================================================================
+
+Data Selection and Scope
+Hive automatically converts the JOIN to MAPJOIN at runtime when
+hive.auto.convert.join setting is set to true
+Bucket map join is a special type of MAPJOIN that uses bucket columns
+in join condition.
+Then instead of fetching the whole table bucket map join only fetches
+the required bucket data.
+A variable hive.optimize.bucketmapjoin must be set to true to
+enable bucket map join
+SELECT /*+ MAPJOIN(orders) */ c_name,  c_phone,  o_orderkey,  o_orderstatus
+FROM customer JOIN orders
+              ON c_custkey =  o_custkey;
+Map join
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/28
+================================================================================
+PAGE 9 of 28
+================================================================================
+
+Data Selection and Scope
+Hive supports LEFT SEMI JOIN
+In LEFT SEMI JOIN the right-hand side table should only be referenced
+in the join condition and not in WHERE or SELECT clauses
+      
+SELECT c_name,  c_phone
+FROM customer LEFT SEMI JOIN orders
+              ON c_custkey =  o_custkey;
+Left semi join
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/28
+================================================================================
+PAGE 10 of 28
+================================================================================
+
+Data Selection and Scope
+Hive supports UNION ALL it does not support INTERSECT and MINUS
+operations
+INTERSECT operation can be implemented as JOIN operation
+MINUS operation can be implemented as LEFT OUTER JOIN operation
+with IS NULL condition in WHERE clause
+SELECT p_name
+FROM PART
+UNION ALL
+SELECT c_name
+FROM CUSTOMER;
+UNION ALL operation
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/28
+================================================================================
+PAGE 11 of 28
+================================================================================
+
+Hive Programming
+Outline
+Data Selection and Scope
+Data Manipulation
+Data Aggregation and Sampling
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/28
+================================================================================
+PAGE 12 of 28
+================================================================================
+
+Data Manipulation
+LOAD statement can be used to load data to Hive tables from local ﬁle
+system or from HDFS
+Load data to Hive table from a local ﬁle
+Load data to Hive partitioned table from a local ﬁle
+LOCAL keyword determines a location of the input ﬁles
+      
+LOAD DATA LOCAL INPATH '/local/home/janusz/HIVE-EXAMPLES/TPCHR/part.txt'
+OVERWRITE INTO TABLE part;
+Loading data from a local file
+LOAD DATA LOCAL INPATH '/local/home/janusz/HIVE-EXAMPLES/TPCHR/part.txt'
+OVERWRITE INTO TABLE part PARTITION
+(P_BRAND='GoldenBolts');
+Loading data into partitioned table from a local file
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/28
+================================================================================
+PAGE 13 of 28
+================================================================================
+
+Data Manipulation
+Load HDFS data to the Hive table using the default system path
+Load HDFS data to the Hive table using using full URI
+If LOCAL keyword is not speciﬁed, the ﬁles are loaded from the full URI
+speciﬁed after INPATH or the value from the fs.default
+OVERWRITE keyword decides whether to append or replace the existing
+data in the target table/partition
+      
+LOAD DATA INPATH '/user/janusz/part.txt'
+OVERWRITE INTO TABLE part;
+Loading dta from HDFS
+      
+LOAD DATA INPATH 'hdfs://10.9.28.14:8020/user/janusz/part.txt'
+OVERWRITE INTO TABLE part;
+Loading data from HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/28
+================================================================================
+PAGE 14 of 28
+================================================================================
+
+Data Manipulation
+EXPORT and IMPORT statements are available to support the import and
+export of data in HDFS for data migration or backup/restore purposes
+EXPORT statement exports both data and metadata from a table or
+partition
+Metadata is exported to a ﬁle called _metadata
+After EXPORT the exported ﬁles can be copied to other Hive instances or
+to other HDFS clusters
+EXPORT TABLE part TO '/user/tpchr/part'
+Exporting table to HDFS
+-rwxr-xr-x 3 janusz supergroup 2739 2017-07-09
+14:37 /user/tpchr/part/_metadata
+drwxr-xr-x - janusz supergroup 0  2017-07-09
+14:37 /user/tpchr/part/p_brand=GoldenBolts
+Contents of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/28
+================================================================================
+PAGE 15 of 28
+================================================================================
+
+Data Manipulation
+IMPORT statement imports ﬁles exported from other HIVE instances into
+an internal table
+An imported table is located in a default HIVE location in HDFS
+IMPORT EXTERNAL statement imports a ﬁle exported from other HIVE
+instances into an external table
+An imported table is located in a default HIVE location in HDFS
+IMPORT table new_part FROM '/user/tpchr/part';
+ HQL
+drwxrwxr- x - janusz supergroup 0  2017-07-09
+14:56 /user/hive/warehouse/ new_part
+Importing data from HDFS
+IMPORT EXTERNAL table new_extpart FROM '/user/tpchr/
+part';
+Importing external table from HDFS
+drwxrwxr- x - janusz supergroup 0  2017-07-09
+15:04 /user/hive/warehouse/ new_extpart
+Contents of HDFS
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/28
+================================================================================
+PAGE 16 of 28
+================================================================================
+
+Data Manipulation
+ORDER BY sorts the results of SELECT statement
+An order is maintained across all of the output from every reducer and
+global sort is performed using only one reducer
+SORT BY does the same job as ORDER BY and indicates which columns
+to sort when ordering the reducer input records
+SORT BY completes sorting before sending data to the reducer
+SORT BY statement does not perform a global sort and only makes sure
+data is locally sorted in each reducer
+SELECT p_partkey,  p_name
+FROM part
+ORDER BY p_name ASC;
+ORDER BY clause
+SET mapred. reduce.tasks = 2;
+SELECT p_partkey,  p_name
+FROM part
+SORT BY p_name ASC;
+SORT BY clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/28
+================================================================================
+PAGE 17 of 28
+================================================================================
+
+Data Manipulation
+When DISTRIBUTE BY clause is applied rows with matching column
+values are partitioned by the same reducer
+DISTRIBUTE BY clause is similar to GROUP BY in relational systems in
+terms of deciding which reducer is used to distribute the mapper
+When using with SORT BY, DISTRIBUTE BY must be speciﬁed before
+the SORT BY statement
+SELECT p_partkey,  p_name FROM part
+DISTRIBUTE BY p_partkey
+SORT BY p_name;
+DISTRIBUTE BY clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/28
+================================================================================
+PAGE 18 of 28
+================================================================================
+
+Data Manipulation
+CLUSTER BY clause is a shorthand operator to perform
+DISTRIBUTE BY and SORT BY operations on the same group of
+columns.
+ORDER BY performs a global sort, while CLUSTER BY sorts in each
+distributed group
+To fully utilize all the available reducers we can do CLUSTER BY ﬁrst and
+then ORDER BY
+SELECT p_partkey,  p_name
+FROM part
+CLUSTER BY p_name;
+CLUSTER BY clause
+SELECT p_partkey,  p_name
+FROM part
+CLUSTER BY p_name
+ORDER BY p_name;
+CLUSTER BY clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/28
+================================================================================
+PAGE 19 of 28
+================================================================================
+
+Hive Programming
+Outline
+Data Selection and Scope
+Data Manipulation
+Data Aggregation and Sampling
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/28
+================================================================================
+PAGE 20 of 28
+================================================================================
+
+Data Aggregation and Sampling
+Hive supports several aggregation functions, analytic functions working
+with GROUP BY and PARTITION BY, and windowing clauses
+Hive supports advanced aggregation by using GROUPING SETS,
+ROLLUP, CUBE, analytic functions, and windowing
+Basic aggregation uses GROUP BY clause and aggregation functions
+To aggregate into sets a function collect_set can be used
+SELECT p_type,  count(*)
+FROM part
+GROUP BY p_type;
+GROUP BY clause
+SELECT p_type,  collect_set( p_name), count(*)
+FROM part
+GROUP BY p_type;
+GROUP BY clause with collect_set function
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/28
+================================================================================
+PAGE 21 of 28
+================================================================================
+
+Data Aggregation and Sampling
+GROUPING SETS clause implements advanced multiple GROUP BY
+operations against the same set of data
+ROLLUP clause allows to calculate multiple levels of aggregations across a
+speciﬁed group of dimensions
+CUBE clause allows to create aggregations over all possible subsets of
+attributes in a given set
+SELECT p_type, p_name, count(*)
+FROM part
+GROUP BY p_type, p_name
+GROUPING SETS ( (p_type), (p_name) );
+GROUPING SETS clause
+SELECT p_type, p_name, count(*)
+FROM part
+GROUP BY p_type, p_name WITH ROLLUP;
+ROLLUP clause
+SELECT p_type, p_name, count(*)
+FROM part
+GROUP BY p_type, p_name WITH CUBE;
+CUBE clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/28
+================================================================================
+PAGE 22 of 28
+================================================================================
+
+Data Aggregation and Sampling
+GROUPING__ID function works as an extension to distinguish entire
+rows from each other
+HAVING can be used for the conditional ﬁltering of GROUP BY results
+SELECT GROUPING__ID,  p_type, p_name, count(*)
+FROM part
+GROUP BY p_type,  p_name WITH CUBE
+ORDER BY grouping__id;
+GROUPING__ID function
+SELECT GROUPING__ID,  p_type, p_name, count(*)
+FROM part
+GROUP BY p_type,  p_name WITH CUBE
+HAVING count(*) > 1
+ORDER BY grouping__id;
+GROUPING__ID function
+TOP                    ISIT312 Big Data Management, SIM S4 2025 22/28
+================================================================================
+PAGE 23 of 28
+================================================================================
+
+Data Aggregation and Sampling
+Analytic functions scan multiple input rows to compute each output
+value
+Analytic functions are usually used with OVER, PARTITION BY,
+ORDER BY, and the windowing speciﬁcation
+Analytic functions operate on windows where the input rows are
+ordered and grouped using ﬂexible conditions expressed through an
+OVER PARTITION clause
+Syntax is the following
+For standard aggregation function (arg1,..., argn) can be either
+COUNT(), SUM(), MIN(), MAX(), or AVG()
+      
+function (arg1,..., argn)
+OVER ([PARTITION BY <...>]
+[ORDER BY <....>] [])
+Syntax of analytic functions
+TOP                    ISIT312 Big Data Management, SIM S4 2025 23/28
+================================================================================
+PAGE 24 of 28
+================================================================================
+
+Data Aggregation and Sampling
+Typical aggregations implemented as analytic functions in the following
+way
+Other analytic functions are used as follows
+      
+SELECT p_name,
+       COUNT(*) OVER (PARTITION BY p_name)
+FROM PART;
+PARTITION BY clause
+      
+SELECT l_orderkey,  l_partkey,  l_quantity,
+       RANK() OVER (ORDER BY l_quantity),
+       DENSE_RANK() OVER (ORDER BY l_quantity)
+FROM lineitem;
+ORDER BY clause
+      
+SELECT l_orderkey,  l_partkey,  l_quantity,
+       RANK() OVER (PARTITION BY l_orderkey ORDER BY l_quantity),
+       DENSE_RANK() OVER (PARTITION BY l_orderkey ORDER BY l_quantity)
+FROM lineitem;
+PARTITION BY clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 24/28
+================================================================================
+PAGE 25 of 28
+================================================================================
+
+Data Aggregation and Sampling
+More analytic functions ...
+      
+SELECT l_orderkey,  l_partkey,  l_quantity,
+       FIRST_VALUE( l_quantity)  OVER (PARTITION BY l_orderkey ORDER BY l_quantity),
+       LAST_VALUE( l_quantity)  OVER (PARTITION BY l_orderkey ORDER BY l_quantity)
+FROM lineitem;;
+PARTITION BY clause
+      
+SELECT l_orderkey,  l_partkey,  l_quantity,
+       MAX( l_quantity)  OVER (PARTITION BY l_orderkey ORDER BY l_partkey
+                             ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)
+FROM lineitem;
+PARTITION BY clause
+      
+SELECT l_orderkey,  l_partkey,  l_quantity,
+       MAX( l_quantity)  OVER (PARTITION BY l_orderkey ORDER BY l_partkey
+                             ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING)
+FROM lineitem;
+PARTITION BY clause
+TOP                    ISIT312 Big Data Management, SIM S4 2025 25/28
+================================================================================
+PAGE 26 of 28
+================================================================================
+
+Data Aggregation and Sampling
+When data volume is extra large we can use a subset of data to speed
+up data analysis.
+Random sampling uses the RAND() function and LIMIT clause to get the
+samples of data
+DISTRIBUTE and SORT clauses are used here to make sure the data is
+also randomly and e "ciently distributed among mappers and reducers
+Bucket table sampling is a special sampling optimized for bucket tables
+      
+SELECT *
+FROM lineitem DISTRIBUTE BY RAND() SORT BY RAND() LIMIT 5;
+DISTRIBUTE BY clause
+SELECT *
+FROM customer TABLESAMPLE( BUCKET 3 OUT OF 8 ON rand());
+Bucket sampling
+TOP                    ISIT312 Big Data Management, SIM S4 2025 26/28
+================================================================================
+PAGE 27 of 28
+================================================================================
+
+Data Aggregation and Sampling
+Block sampling allows to randomly pick up N rows of data, percentage (n
+percentage) of data size, or N byte size of data
+SELECT *
+FROM lineitem TABLESAMPLE( 4 ROWS);
+Block sampling
+SELECT *
+FROM lineitem TABLESAMPLE( 50 PERCENT);
+Block sampling
+SELECT *
+FROM lineitem TABLESAMPLE( 20B);
+Block sampling
+TOP                    ISIT312 Big Data Management, SIM S4 2025 27/28
+================================================================================
+PAGE 28 of 28
+================================================================================
+
+References
+Gross C., GuptaA., Shaw S., Vermeulen A. F., Kjerrumgaar D., Practical
+Hive: A guide to Hadoop's Data Warehouse System, Apress 2016,
+Chapter 4 (Available through UOW library)
+Lee D., Instant Apache Hive essentials how-to: leverage your knowledge
+of SQL to easily write distributed data processing applications on
+Hadoop using Apache Hive, Packt Publishing Ltd. 2013 (Available
+through UOW library)
+Apache Hive TM, https://hive.apache.org/
+TOP                    ISIT312 Big Data Management, SIM S4 2025 28/28

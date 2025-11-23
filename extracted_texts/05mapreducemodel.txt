@@ -1,0 +1,423 @@
+
+================================================================================
+PAGE 1 of 31
+================================================================================
+
+  ISIT312 Big Data Management
+MapReduce Data Processing
+Model
+Dr Fenghui Ren
+School of Computing and Information Technology -
+University of Wollongong
+================================================================================
+PAGE 2 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 2/31
+================================================================================
+PAGE 3 of 31
+================================================================================
+
+Key-value pairs
+Key-Value pairs : MapReduce  basic data model
+Input, output, and intermediate records in MapReduce  are represented
+as key-value pairs  (aka name-value/attribute-value pairs )
+A key is an identiﬁer, for example, a name of attribute
+A value  is a data associated with a key
+Key                          Value
+City                         Sydney
+Employer                     Cloudera
+sql
+In MapReduce , a key is not required to be unique. -
+It may be simple value  or a complex object -
+TOP                    ISIT312 Big Data Management, SIM S4 2025 3/31
+================================================================================
+PAGE 4 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 4/31
+================================================================================
+PAGE 5 of 31
+================================================================================
+
+MapReduce Model
+MapReduce data processing model is a sequence of Map, Partition,
+Shu!e and Sort, and Reduce stages
+TOP                    ISIT312 Big Data Management, SIM S4 2025 5/31
+================================================================================
+PAGE 6 of 31
+================================================================================
+
+MapReduce Model
+An abstract MapReduce program: WordCount
+  
+function Map(Long lineNo, String line):
+  lineNo: the position no. of a line in the text
+  line: a line of text
+    for each word w in line:
+      emit (w, 1)
+Function Map
+function Reduce(String w, List loc):
+  w: a word
+  loc: a list of counts outputted from map instances
+    sum = 0
+    for each c in loc:
+      sum += c
+    emit (word, sum)
+           
+Function Reduce
+TOP                    ISIT312 Big Data Management, SIM S4 2025 6/31
+================================================================================
+PAGE 7 of 31
+================================================================================
+
+MapReduce Model
+A diagram of data processing in MapReduce  model
+TOP                    ISIT312 Big Data Management, SIM S4 2025 7/31
+================================================================================
+PAGE 8 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 8/31
+================================================================================
+PAGE 9 of 31
+================================================================================
+
+Map phase
+Map phase  uses input format and record reader functions to derive
+records in the form of key-value pairs  for the input data
+Map phase  applies a function or functions to each key-value  pair over a
+portion of the dataset
+Each Map task operates against one ﬁlesystem ( HDFS) block
+In the diagram fragment, a Map task will call its map() function,
+represented by M in the diagram, once for each record, or key-value
+pair; for example, rec1, rec2, and so on.In the case of a dataset hosted in HDFS, this portion is usually called as a block
+If there are n blocks of data in the input dataset, there will be at least n Map
+tasks (also referred to as Mappers )-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 9/31
+================================================================================
+PAGE 10 of 31
+================================================================================
+
+Map phase
+Each call of the map() function accepts one key-value pair and emits zero
+or more key-value pairs
+The emitted data from Mapper , also in the form of lists of key-value
+pairs , will be subsequently processed in the Reduce phase
+Di"erent Mappers  do not communicate or share data with each other
+Common Map() functions include ﬁltering of speciﬁc keys, such as
+ﬁltering log messages if you only wanted to count or analyse ERROR log
+messages
+Another example of Map() function would be to manipulate values, such
+as a function that converts a text value to lowercase
+map (in_key, in_value) -> list (intermediate_key, intermediate_value)
+A call of Map() function
+       
+Map (k, v) = if (ERROR in v) then emit (k, v)
+Sample Map() function
+      
+ Map (k, v) = emit (k, v.toLowercase ( ))
+Sample Map() function
+TOP                    ISIT312 Big Data Management, SIM S4 2025 10/31
+================================================================================
+PAGE 11 of 31
+================================================================================
+
+Map phase
+Partition function, or Partitioner , ensures each key and its list of values is
+passed to one and only one Reduce  task or Reducer
+The number of partitions is determined by the (default or user-deﬁned)
+number of Reducers
+Custom Partitioners  are developed for various practical purposes
+TOP                    ISIT312 Big Data Management, SIM S4 2025 11/31
+================================================================================
+PAGE 12 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 12/31
+================================================================================
+PAGE 13 of 31
+================================================================================
+
+Reduce Phase
+Input of the Reduce phase  is output of the Map phase  (via shu !e-and
+sort)
+Each Reduce task (or Reducer) executes a reduce() function for each
+intermediate key and its list of associated intermediate values
+The output from each reduce() function is zero or more key-values
+Note that, in the reality, an output from Reducer may be an input to
+another Map phase  in a complex multistage computational workﬂow
+    
+reduce (intermediate_key,  list (intermediate_value)) -> (out_key, out_value)
+A call of Reduce() function
+TOP                    ISIT312 Big Data Management, SIM S4 2025 13/31
+================================================================================
+PAGE 14 of 31
+================================================================================
+
+Example of Reduce Functions
+The simplest and most common reduce() function is the Sum Reducer,
+which simply sums a list of values for each key
+A count operation is as simple as summing a set of numbers
+representing instances of the values you wish to count
+Other examples of reduce() function are max() and average()
+reduce (k, list ) =
+  {
+    sum =  0
+    for int i in list  :
+      sum +  = i
+    emit ( k, sum)
+  }
+Sum reducer
+TOP                    ISIT312 Big Data Management, SIM S4 2025 14/31
+================================================================================
+PAGE 15 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 15/31
+================================================================================
+PAGE 16 of 31
+================================================================================
+
+Shuffle and Sort
+Shu! e-and-sort  is the process where data are transferred from Mapper
+to Reducer
+The most important purpose of Shu! e-and-sort  is to minimise data
+transmission through a network
+In general, in Shu! e-and-Sort , the Mapper  output is sent to the target
+Reduce task according to the partitioning functionIt is the heart of MapReduce  where the "magic" happens -
+TOP                    ISIT312 Big Data Management, SIM S4 2025 16/31
+================================================================================
+PAGE 17 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 17/31
+================================================================================
+PAGE 18 of 31
+================================================================================
+
+Combine phase
+A structure of Combine phase
+TOP                    ISIT312 Big Data Management, SIM S4 2025 18/31
+================================================================================
+PAGE 19 of 31
+================================================================================
+
+Combine phase
+If the Reduce function is commutative  and associative  then it can be
+performed before the Shu! e-and-Sort phase
+In this case, the Reduce function is called a Combiner function
+For example, sum and count is commutative  and associative , but
+average is not
+The use of a Combiner  can minimise the amount of data transferred to
+Reduce phase  and in such a way reduce the network transmit overhead
+A MapReduce  application may contain zero Reduce tasks
+In this case, it is a Map-Only  application
+Examples of Map-only MapReduce  jobs
+ETL routines without data summarization, aggregation and reduction
+File format conversion jobs
+Image processing jobs-
+-
+-
+TOP                    ISIT312 Big Data Management, SIM S4 2025 19/31
+================================================================================
+PAGE 20 of 31
+================================================================================
+
+Combine phase
+Map-Only MapReduce
+TOP                    ISIT312 Big Data Management, SIM S4 2025 20/31
+================================================================================
+PAGE 21 of 31
+================================================================================
+
+Combine phase
+An election Analogy for MapReduce
+TOP                    ISIT312 Big Data Management, SIM S4 2025 21/31
+================================================================================
+PAGE 22 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 22/31
+================================================================================
+PAGE 23 of 31
+================================================================================
+
+Example
+For a database of 1 billion people, compute the average number of
+social contacts a person has according to age
+In SQL like language
+If the records are stored in di"erent datanodes then in Map function is
+the following
+SELECT age,  AVG(contacts)
+FROM social. person
+GROUP BY age
+SELECT statement
+function Map is
+      input:  integer K between 1  and 1000, representing a batch of 1
+      million social. person records
+      for each social. person record in the K- th batch do
+        let Y be the person age
+        let N be the number of contacts the person has
+          produce one output record ( Y,(N,1))
+      repeat
+end function
+Map function
+TOP                    ISIT312 Big Data Management, SIM S4 2025 23/31
+================================================================================
+PAGE 24 of 31
+================================================================================
+
+Example
+Then Reduce  function is the following
+MapReduce  sends the codes to the location of each data batch (not the
+other way around)
+Question: the output from Map is multiple copies of (Y, (N, 1)), but
+the input to Reduce  is (Y, (N, C)), so what ﬁlls the gap?
+function Reduce is
+       input:  age (in years)  Y
+       for each input record ( Y,(N,C)) do
+         Accumulate in S the sum of N* C
+         Accumulate in C_new the sum of C
+       repeat
+       let A be S/ C_new
+       produce one output record ( Y,(A,C_new ))
+end function
+Reduce function
+TOP                    ISIT312 Big Data Management, SIM S4 2025 24/31
+================================================================================
+PAGE 25 of 31
+================================================================================
+
+Example
+A MapReduce  application in Hadoop  is a Java implementation of the
+MapReduce model for a speciﬁc problem, for example, word count
+TOP                    ISIT312 Big Data Management, SIM S4 2025 25/31
+================================================================================
+PAGE 26 of 31
+================================================================================
+
+Example
+Sample processing on a screen
+TOP                    ISIT312 Big Data Management, SIM S4 2025 26/31
+================================================================================
+PAGE 27 of 31
+================================================================================
+
+Example
+Sample processing on a screen
+TOP                    ISIT312 Big Data Management, SIM S4 2025 27/31
+================================================================================
+PAGE 28 of 31
+================================================================================
+
+MapReduce Data Processing Model
+Outline
+Key-value pairs
+MapReduce model
+Map phase
+Reduce phase
+Shu! e and sort
+Combine phase
+Example
+Running MapReduce jobs
+TOP                    ISIT312 Big Data Management, SIM S4 2025 28/31
+================================================================================
+PAGE 29 of 31
+================================================================================
+
+Running MapReduce Jobs
+Client submits Mapreduce job
+YARN resource manager coordinates the allocation of computing
+resources in the cluster
+YARN node manager(s): launch & monitor containers on machines in the
+cluster
+TOP                    ISIT312 Big Data Management, SIM S4 2025 29/31
+================================================================================
+PAGE 30 of 31
+================================================================================
+
+Running MapReduce Jobs
+MapReduce application master runs in a container, and coordinates the
+tasks in a MapReduce job
+HDFS is used for sharing job ﬁles between the other ﬁles
+TOP                    ISIT312 Big Data Management, SIM S4 2025 30/31
+================================================================================
+PAGE 31 of 31
+================================================================================
+
+References
+White T., Hadoop The Deﬁnitive Guide: Storage and Analysis at Internet
+Scale, O'Reilly, 2015
+TOP                    ISIT312 Big Data Management, SIM S4 2025 31/31
